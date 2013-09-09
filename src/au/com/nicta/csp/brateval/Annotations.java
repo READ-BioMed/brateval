@@ -77,7 +77,8 @@ public class Annotations
           String [] arg2 = fields[2].split(":");
           //System.out.println(arg2[0] + "|" + arg2[1] + "|" + d.getEntity(arg2[1]));
 
-          d.addRelation(subfields[0], new Relation(subfields[0], subfields[1], arg1[0], d.getEntity(fields[1].split(":")[1]), arg2[0], d.getEntity(fields[2].split(":")[1]), file));
+          //d.addRelation(subfields[0], new Relation(subfields[0], subfields[1], arg1[0], d.getEntity(fields[1].split(":")[1]), arg2[0], d.getEntity(fields[2].split(":")[1]), file));
+          d.addRelation(subfields[0], new Relation(subfields[0], subfields[1], arg1[0], arg1[1], arg2[0], arg2[1], file));
         }
         else if (line.startsWith("E"))
         {
@@ -145,6 +146,12 @@ public class Annotations
           d.addNote(id, new Note(id, subfields[0], subfields[1], string, file));
         }
       }
+    }
+    
+    for (Relation r : d.getRelations())
+    {
+      r.setEntity1(d.getEntity(r.getEntity1Id()));
+      r.setEntity2(d.getEntity(r.getEntity2Id()));
     }
 
     b.close();
