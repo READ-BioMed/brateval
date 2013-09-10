@@ -35,5 +35,6 @@ public class Event
     this.type = type;
     this.event_trigger = event_trigger;
     this.arguments = arguments;
+    this.file = file;
   }
 }
