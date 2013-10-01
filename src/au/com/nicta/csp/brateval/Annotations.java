@@ -90,7 +90,7 @@ public class Annotations
           LinkedList <String> arguments = new LinkedList <String> ();
 
           for (int i = 1; i < subfields.length; i++)
-          { arguments.add(subfields[i]); }
+          { if (subfields[i].trim().length() > 0) { arguments.add(subfields[i]); } }
 
           d.addEvent(id, new Event(id, trigger[0], trigger[1], arguments, file));
         }
