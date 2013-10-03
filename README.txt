@@ -45,11 +45,11 @@ mvn install
 
 Based on the examples above, using maven consider the following call from the directory where the software was installed to perform entity comparison:
 
-mvn exec:java -Dexec.mainClass=au.com.nicta.csp.brateval.CompareEntities reference_set_folder evaluation_set_folder exact_match
+mvn exec:java -Dexec.mainClass=au.com.nicta.csp.brateval.CompareEntities -Dexec.args="reference_set_folder evaluation_set_folder exact_match"
 
 and the following one for relation comparison:
 
-mvn exec:java -Dexec.mainClass=au.com.nicta.csp.brateval.CompareRelations reference_set_folder evaluation_set_folder exact_match verbose
+mvn exec:java -Dexec.mainClass=au.com.nicta.csp.brateval.CompareRelations -Dexec.args="reference_set_folder evaluation_set_folder exact_match verbose"
 
 The software has been used to produce results for the Variome corpus presented in the following publication:
 
