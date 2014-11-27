@@ -239,7 +239,7 @@ public class Annotations
 	{
 	  w.write(a.getId());
       w.write("\t");
-      w.write(a.getValue());
+      w.write(a.getName());
 
       for (String arg : a.getList())
       {
