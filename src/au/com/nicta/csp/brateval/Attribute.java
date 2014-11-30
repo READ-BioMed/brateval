@@ -31,7 +31,7 @@ public class Attribute
   { return name; }
 
   /** @deprecated
-   * Return a list composed of the target ID and the value of the attribute */
+   * Return a list composed of the target ID and (optionally) the value of the attribute */
   public LinkedList <String> getList ()
   { return list; }
 
@@ -39,6 +39,16 @@ public class Attribute
   public String getFile()
   { return file; }
 
+  /**
+   * Create a new attribute instance
+   *
+   * @param id The ID of the attribute (eg 'M3', 'A27')
+   * @param name The name of the attribute, denoting what the attribute represents (eg 'Negation')
+   * @param valueList The list of values of the attribute, which are stored separated by spaces after the name in the '.ann' file.
+   *                  This should contain exactly one element if the attribute doesn't have a value, and two if it does
+   *                  (the second denotes the value)
+   * @param file The name of the file which the attributes came from.
+   */
   public Attribute(String id, String name, LinkedList<String> valueList, String file)
   {
 	this.id = id;
@@ -50,6 +60,7 @@ public class Attribute
       this.value = null;
     }
     assert valueList.isEmpty(); // should now have consumed all items (at most 2)
+    this.list = new LinkedList<String>(valueList); // only needed for deprecated getList
     this.file = file;
   }
 }
