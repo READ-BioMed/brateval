@@ -5,7 +5,6 @@ import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.LinkedList;
 
 /**
@@ -45,9 +44,6 @@ public class Annotations
             String type = ent[0];
 
             String [] locations = fields[1].substring(ent[0].length()).trim().split(";");
-
-            if (locations.length > 1)
-            {System.out.println(Arrays.toString(locations));}
 
             LinkedList <Location> l = new LinkedList <Location> ();
 

@@ -20,9 +20,14 @@ public class CompareEntities
   {
 	String folder1 = argc[0];
 	String folder2 = argc[1];
-
 	boolean exact_match = Boolean.parseBoolean(argc[2]);
 
+	evaluate(folder1, folder2, exact_match);
+  }
+
+  public static void evaluate(String folder1, String folder2, boolean exact_match)
+  throws IOException
+  {
 	Map <String, Integer> entityTP = new TreeMap <String, Integer> ();
 	Map <String, Integer> entityFP = new TreeMap <String, Integer> ();
 	Map <String, Integer> entityFN = new TreeMap <String, Integer> ();

@@ -22,10 +22,15 @@ public class CompareRelations
   {
 	String folder1 = argc[0];
 	String folder2 = argc[1];
-	
 	boolean exact_match = Boolean.parseBoolean(argc[2]);
 	boolean verbose = Boolean.parseBoolean(argc[3]);
 
+	evaluate(folder1, folder2, exact_match, verbose);
+  }
+  
+  public static void evaluate(String folder1, String folder2, boolean exact_match, boolean verbose)
+  throws IOException
+  {
 	Set <String> relationTypes = new TreeSet <String> ();
 
 	Map <String, Integer> relationTP = new HashMap <String, Integer> ();
