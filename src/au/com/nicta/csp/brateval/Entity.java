@@ -130,4 +130,17 @@ public class Entity
 
   	return false;
   }
+  
+  public static double entityComparisonStringSimilarity(Entity e1, Entity e2,
+  	double similarity_threshold)
+  {
+  	int l = Math.max(e1.getString().length(), e2.getString().length());
+  	int max_dist = (int)Math.floor((1.0-similarity_threshold) * ((double)l)) ;
+  	int dist = SpanSimilarity.editDistance(e1.getString(), e2.getString(),
+  		max_dist);
+  	if (dist <= max_dist)
+   	{ return 1.0 - ((double)dist)/((double)l); }
+
+  	return 0.0 ;
+  }
 }

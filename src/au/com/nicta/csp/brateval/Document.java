@@ -196,6 +196,23 @@ public class Document
 	return null;
   }
   
+  public Entity findEntitySimilarString(Entity e, double min_similarity) {
+    Entity rc = null;
+    for (Entity e1 : entities.values())
+    {
+      if (e1.getType().equals(e.getType()) && !e.equals(e1))
+      {
+      	double sim = Entity.entityComparisonStringSimilarity(e, e1, min_similarity);
+      	if (sim >= min_similarity)
+      	{
+	      	min_similarity = sim;
+	      	rc = e1;
+      	}
+  	  }
+    }
+
+	return rc;
+  }
   /**
    * Find relation in a given document
    * 

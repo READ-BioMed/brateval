@@ -27,4 +27,10 @@ public class Utils
 
 	return scoreRank;
   }
+  
+  public static <K> Map<K,Integer> plusMap(Map<K,Integer> m, K key, Integer increment) {
+	  if (increment.intValue() != 0)
+	  	m.merge(key, increment, Integer::sum);
+	  return  m;
+  }
 }

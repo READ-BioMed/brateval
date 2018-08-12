@@ -31,8 +31,8 @@ public class SpanSimilarity {
 	        }
 	    }
 	 
-	    System.out.println("Sed allowed: "+allowed_dist+" measured: "+
-	    d[y.length()]+ " " + y + " ~ " + x  );
+	    //Uncomment to debug Edit Distance
+	    //System.out.println("SED:: allowed: " + allowed_dist + " measured: " + d[y.length()]+ " " + y + " ~ " + x  );
 	    return d[y.length()];
 	}
 
