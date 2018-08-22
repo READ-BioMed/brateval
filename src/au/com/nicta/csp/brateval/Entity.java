@@ -143,4 +143,9 @@ public class Entity
 
   	return 0.0 ;
   }
+  
+  public String locationInfo()
+  {
+  	return getFile();
+  }
 }

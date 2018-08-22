@@ -1,5 +1,6 @@
 package au.com.nicta.csp.brateval;
 
+import java.nio.file.Paths;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
@@ -70,8 +71,10 @@ public class CompareEntities
     {
       if (file.getName().endsWith(".ann"))
       {
-        Document d1 = Annotations.read(file.getAbsolutePath(), "ann");
-        Document d2 = Annotations.read(folder2 + File.separator +  file.getName(), "ann");
+        Document d1 = Annotations.read(file.getAbsolutePath(),
+        	Paths.get(folder1, file.getName()).toString());
+        Document d2 = Annotations.read(folder2 + File.separator +  file.getName(),
+        	Paths.get(folder2, file.getName()).toString());
 
     	for (Entity e : d1.getEntities())
     	{
@@ -102,7 +105,9 @@ public class CompareEntities
       		if (entityFP.get(e.getType()) == null)
       		{ entityFP.put(e.getType(), 1); }
       		else
-      		{ entityFP.put(e.getType(), entityFP.get(e.getType()) + 1); }
+      		{ entityFP.put(e.getType(), entityFP.get(e.getType()) + 1); 
+      		    System.out.println("FP:" + e.locationInfo() + ": " + e);
+			}
           }
     	}
 
@@ -128,8 +133,7 @@ public class CompareEntities
             { entityFN.put(e.getType(), 1); }
       		else
       		{ entityFN.put(e.getType(), entityFN.get(e.getType()) + 1); }
-            
-            System.out.println("FN: " + e);
+            System.out.println("FN:" + e.locationInfo() + ": " + e);
           }
     	}
       }

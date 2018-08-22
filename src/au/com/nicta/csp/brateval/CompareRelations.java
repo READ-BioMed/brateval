@@ -1,5 +1,6 @@
 package au.com.nicta.csp.brateval;
 
+import java.nio.file.Paths;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -17,6 +18,8 @@ import java.util.TreeSet;
  */
 public class CompareRelations
 {
+  static  boolean show_full_taxonomy = false;
+  static  TaxonomyConfig taxonomy = new TaxonomyConfig();
 
   public static void main (String argc []) throws IOException
   {
@@ -28,6 +31,30 @@ public class CompareRelations
 	evaluate(folder1, folder2, exact_match, verbose);
   }
   
+  static void report(int level, String rt, int TP, int FP, int FN, int MFP, int MFN) {
+      double precision = 0;
+      double recall = 0;
+      double f_measure = 0;
+
+      if (TP+FP > 0) { precision = (double)TP/(TP+FP); }
+
+      if (TP+FN > 0) { recall = (double)TP/(TP+FN); }
+
+      if ((precision+recall) > 0)
+      { f_measure = (2*precision*recall)/(double)(precision+recall); }
+
+      System.out.println(rt
+    		           + "|tp:" + TP 
+    		           + "|fp:" + FP 
+    		           + "|fn:" + FN
+       		           + "|precision:" + String.format("%1.4f", precision)
+    		           + "|recall:" + String.format("%1.4f", recall)
+    		           + "|f1:" + String.format("%1.4f", f_measure)
+    		           + "|fpm:" + MFP
+    		           + "|fnm:" + MFN
+    		           );
+  }
+
   public static void evaluate(String folder1, String folder2, boolean exact_match, boolean verbose)
   throws IOException
   {
@@ -48,8 +75,10 @@ public class CompareRelations
       {
         Map <String, RelationComparison> relations = new TreeMap <String, RelationComparison> ();
 
-        Document d1 = Annotations.read(file.getAbsolutePath(), "ann");
-        Document d2 = Annotations.read(folder2 + File.separator +  file.getName(), "ann");
+        Document d1 = Annotations.read(file.getAbsolutePath(),
+        	Paths.get(folder1, file.getName()).toString());
+        Document d2 = Annotations.read(folder2 + File.separator +  file.getName(),
+        	Paths.get(folder1, file.getName()).toString());
 
     	// TPs and FPs
   	    for (Relation rel : d1.getRelations())
@@ -187,32 +216,53 @@ public class CompareRelations
     System.out.println("");
     System.out.println("Summary");
 
+    taxonomy.traverseRelations(new HierList.Visitor<TaxonomyConfig.RelationDesc>() {
+		public void pre(int level, TaxonomyConfig.RelationDesc curr,
+			TaxonomyConfig.RelationDesc parent) {
+		}
+		public void post(int level, TaxonomyConfig.RelationDesc curr,
+			TaxonomyConfig.RelationDesc parent) {
+			  if (parent == null) return;
+		      String rt = curr.name;
+		      int TP = (relationTP.get(rt) == null ? 0 : relationTP.get(rt));
+		      int FP = (relationFP.get(rt) == null ? 0 : relationFP.get(rt));
+		      int FN = (relationFN.get(rt) == null ? 0 : relationFN.get(rt));
+		      int MFP = (relationMissingFP.get(rt) == null ? 0 : relationMissingFP.get(rt));
+		      int MFN = (relationMissingFN.get(rt) == null ? 0 : relationMissingFN.get(rt));
+			  Utils.plusMap(relationTP, parent.name, TP);
+			  Utils.plusMap(relationFP, parent.name, FP);
+			  Utils.plusMap(relationFN, parent.name, FN);
+			  Utils.plusMap(relationMissingFP, parent.name, MFP);
+			  Utils.plusMap(relationMissingFN, parent.name, MFN);
+		}
+	});
+    taxonomy.traverseRelations(new HierList.Visitor<TaxonomyConfig.RelationDesc>() {
+		public void pre(int level, TaxonomyConfig.RelationDesc curr,
+			TaxonomyConfig.RelationDesc parent) {
+		      String rt = curr.name;
+		      int TP = (relationTP.get(rt) == null ? 0 : relationTP.get(rt));
+		      int FP = (relationFP.get(rt) == null ? 0 : relationFP.get(rt));
+		      int FN = (relationFN.get(rt) == null ? 0 : relationFN.get(rt));
+		      int MFP = (relationMissingFP.get(rt) == null ? 0 : relationMissingFP.get(rt));
+		      int MFN = (relationMissingFN.get(rt) == null ? 0 : relationMissingFN.get(rt));
+
+			  if (show_full_taxonomy || TP + FP + FN + MFP + MFN > 0)
+				report(level, rt, TP, FP, FN, MFP, MFN);
+			  relationTypes.remove(rt);
+		}
+		public void post(int level, TaxonomyConfig.RelationDesc curr,
+			TaxonomyConfig.RelationDesc parent) {
+		}
+	});
+
     for (String rt : relationTypes)
     {
       int TP = (relationTP.get(rt) == null ? 0 : relationTP.get(rt));
       int FP = (relationFP.get(rt) == null ? 0 : relationFP.get(rt));
       int FN = (relationFN.get(rt) == null ? 0 : relationFN.get(rt));
-
-      double precision = 0;
-      double recall = 0;
-      double f_measure = 0;
-
-      if (TP+FP > 0) { precision = (double)TP/(TP+FP); }
-
-      if (TP+FN > 0) { recall = (double)TP/(TP+FN); }
-
-      if ((precision+recall) > 0)
-      { f_measure = (2*precision*recall)/(double)(precision+recall); }
-
-      System.out.println(rt
-    		           + "|tp:" + (relationTP.get(rt) == null ? 0 : relationTP.get(rt)) 
-    		           + "|fp:" + (relationFP.get(rt) == null ? 0 : relationFP.get(rt)) 
-    		           + "|fn:" + (relationFN.get(rt) == null ? 0 : relationFN.get(rt))
-       		           + "|precision:" + String.format("%1.4f", precision)
-    		           + "|recall:" + String.format("%1.4f", recall)
-    		           + "|f1:" + String.format("%1.4f", f_measure)
-    		           + "|fpm:" + (relationMissingFP.get(rt) == null ? 0 : relationMissingFP.get(rt))
-    		           + "|fnm:" + (relationMissingFN.get(rt) == null ? 0 : relationMissingFN.get(rt)));    	
+      int MFP = (relationMissingFP.get(rt) == null ? 0 : relationMissingFP.get(rt));
+      int MFN = (relationMissingFN.get(rt) == null ? 0 : relationMissingFN.get(rt));
+      report(0, rt, TP, FP, FN, MFP, MFN);
     }
   }
 }

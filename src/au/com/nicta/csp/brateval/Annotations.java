@@ -153,6 +153,16 @@ public class Annotations
     b.close();
   }
 
+  public static void read(String fileName, Document d) throws IOException
+  {
+	  read(fileName, fileName, d);
+  }
+
+  public static Document read(String fileName) throws IOException
+  {
+	  return read(fileName, fileName);
+  }
+  
   public static void write(String fileName, Document d) throws IOException
   {
 	BufferedWriter w = new BufferedWriter(new FileWriter(fileName));
