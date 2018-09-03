@@ -14,6 +14,15 @@ public class Location
   public int getStart()
   { return start; }
 
+  public void setStart(int s)
+  { start = s; }
+
   public int getEnd()
   { return end; }
+
+  public void setEnd(int e)
+  { end = e; }
+  
+  public int length()
+  { return end - start; }
 }

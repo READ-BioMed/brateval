@@ -23,11 +23,12 @@ public class CompareEntities
   
   public static void main (String argc []) throws IOException
   {
-	String folder1 = argc[0];
-	String folder2 = argc[1];
-	boolean exact_match = Boolean.parseBoolean(argc[2]);
-	double	similarity_threshold = (argc.length > 3) ?
-			Double.parseDouble(argc[3]) : 1.0;
+	Options.common = new Options(argc);
+	String folder1 = Options.common.argv[0];
+	String folder2 = Options.common.argv[1];
+	boolean exact_match = Boolean.parseBoolean(Options.common.argv[2]);
+	double	similarity_threshold = (Options.common.argv.length > 3) ?
+			Double.parseDouble(Options.common.argv[3]) : 1.0;
 
 	evaluate(folder1, folder2, exact_match, similarity_threshold);
   }
@@ -69,13 +70,23 @@ public class CompareEntities
 
     for (File file : folder.listFiles())
     {
-      if (file.getName().endsWith(".ann"))
+      String baseName = file.getName();
+	  String txtName = baseName.substring(0, baseName.lastIndexOf('.')) + ".txt"; 
+      if (baseName.endsWith(".ann"))
       {
+		BackAnnotate back_annotate = new BackAnnotate(
+			new String[]{folder1 + File.separator +  txtName,
+						folder2 + File.separator +  txtName});
+		
+		TreeMap<Integer,BackAnnotate.SpanTag> ref_map = null;
         Document d1 = Annotations.read(file.getAbsolutePath(),
         	Paths.get(folder1, file.getName()).toString());
         Document d2 = Annotations.read(folder2 + File.separator +  file.getName(),
         	Paths.get(folder2, file.getName()).toString());
 
+        if (back_annotate.hasSource()) {
+        	ref_map = BackAnnotate.makeTagMap(d2.getEntities());
+    	}
     	for (Entity e : d1.getEntities())
     	{
           entityTypes.add(e.getType());
@@ -106,11 +117,15 @@ public class CompareEntities
       		{ entityFP.put(e.getType(), 1); }
       		else
       		{ entityFP.put(e.getType(), entityFP.get(e.getType()) + 1); 
-      		    System.out.println("FP:" + e.locationInfo() + ": " + e);
+      		    System.out.println("FP:" + back_annotate.locationInfo(e) + ": " + 
+      		    	(ref_map != null? back_annotate.renderContext(e,ref_map) : e));
 			}
           }
     	}
 
+        if (back_annotate.hasSource()) {
+        	ref_map = BackAnnotate.makeTagMap(d1.getEntities());
+    	}
    	    for (Entity e : d2.getEntities())
         {
           entityTypes.add(e.getType());
@@ -133,7 +148,8 @@ public class CompareEntities
             { entityFN.put(e.getType(), 1); }
       		else
       		{ entityFN.put(e.getType(), entityFN.get(e.getType()) + 1); }
-            System.out.println("FN:" + e.locationInfo() + ": " + e);
+            System.out.println("FN:" + back_annotate.locationInfo(e) + ": " +
+            	(ref_map != null ? back_annotate.renderContext(e,ref_map) :e));
           }
     	}
       }
