@@ -5,6 +5,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.List;
+import java.util.LinkedList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.SortedMap;
@@ -38,20 +39,8 @@ public class BackAnnotate {
 		}
 	}
 
-	SpanRenderer makeRenderer(Options.Highlight h) {
-		switch (h) {
-			case HTML:
-				return new HtmlSpans();
-			case TERMCOLOR:
-				return new TermColorSpans();
-			default:
-				return new PlainSpans();
-		}
-	}
-	
 	public BackAnnotate(String f) {
 		sourcePath = Paths.get(".", f);
-		spanRenderer = makeRenderer(Options.common.highlight);
 		readSource();
 	}
 
@@ -60,7 +49,6 @@ public class BackAnnotate {
 			Path p = Paths.get(".", f);
 			if (Files.exists(p)) {
 				sourcePath = p;
-				spanRenderer = makeRenderer(Options.common.highlight);
 				readSource();
 				return;
 			}
@@ -79,14 +67,6 @@ public class BackAnnotate {
 		return pos - linePositions.floorKey(pos);
 	}
 	
-	//Span type bits
-	final byte FocusEntity1 = 1;
-	final byte FocusEntity2 = 2;
-	final byte MatchEntity  = 4;
-	final byte SwapEntity   = 8;
-	final byte OtherEntity  = 16;
-	final byte MatchRelation= 32;
-
 	static class SpanTag {
 		boolean side;
 		int start;
@@ -101,63 +81,6 @@ public class BackAnnotate {
 		SpanTag setOnTopE(SpanTag other)
 		{	onTopE = other; return this; }
 	}
-	
-	public interface SpanRenderer {
-		String openLook(byte type);
-		String closeLook(byte type);
-		String convertText(String text);
-	}
-	
-	public class PlainSpans implements SpanRenderer {
-		public String openLook(byte type) {return "";}
-		public String closeLook(byte type) {return "";}
-		public String convertText(String text) {return text;}
-	}
-	
-	public class TermColorSpans implements SpanRenderer {
-		public String openLook (byte type) {
-			if ((type & FocusEntity1) != 0)
-				if ((type & OtherEntity) != 0)
-					return "\033[1;32m";
-				else
-					return "\033[1;31m";
-			else
-				if ((type & OtherEntity) != 0)
-					return "\033[33m";
-				else
-					return "";
-		}
-		
-		public String closeLook (byte type) {
-			return "\033[0m";
-		}
-
-		public String convertText(String text) {
-			return text;
-		}
-	}
-				
-	
-	public class HtmlSpans implements SpanRenderer {
-		public String openLook (byte type) {
-			String color;
-			if ((type & FocusEntity1) != 0)
-					color = "#0000ff";
-			else
-					color = "#000000";
-			return "<span style=\"color: " + color + "\">";
-		}
-			
-		public String closeLook (byte type) {
-			return "</span>";
-		}
-
-		public String convertText(String text) {
-			return text;
-		}
-	}
-	
-	SpanRenderer spanRenderer = new PlainSpans();
 	
 	int wordBound(String s, int i, boolean backward, boolean alignBackward)
 		{
@@ -182,22 +105,24 @@ public class BackAnnotate {
 		return lower_is_better? lower : upper;
 	}
 
-	String renderSpan(int start, int end, Collection<SpanTag> tags)
+	void renderSpan(List<Object> dst, int start, int end, Collection<SpanTag> tags)
 	{
 		byte t = 0;
 		boolean focus = false;
 		boolean reference = false;
 		for (SpanTag tag:tags) {
-			if (tag.entity==null) return ""; //Muted
-			if (!tag.side) t |= FocusEntity1;
-			else t |= OtherEntity; //To be extended
+			if (tag.entity==null) return; //Muted
+			if (!tag.side) t |= OutFormat.FocusEntity1;
+			else t |= OutFormat.OtherEntity; //To be extended
 		}
-			return spanRenderer.openLook(t) + 
-				source.substring(start, end) +
-				spanRenderer.closeLook(t);
+
+		dst.add(new OutFormat.Span(
+				source.substring(start, end)
+					.replaceAll("\\s+"," ")
+			,t)); 
 	}
 
-	void renderSpan(StringBuffer buff, SortedMap<Integer,SpanTag> spanMap) {
+	void renderSpan(List<Object> dst, SortedMap<Integer,SpanTag> spanMap) {
 			Iterable<Map.Entry<Integer,SpanTag> > es = spanMap.entrySet();
 				HashSet<SpanTag> spanTags = new HashSet<SpanTag>(32);
 				int start = es.iterator().next().getKey();
@@ -209,7 +134,7 @@ public class BackAnnotate {
 				for (Map.Entry<Integer,SpanTag> e: es) {
 					int i = e.getKey();
 					if (start != i)
-						buff.append(renderSpan(start, i, spanTags));
+						renderSpan(dst, start, i, spanTags);
 					SpanTag s = e.getValue();
 					while (s != null) {
 						if (s.start == e.getKey()) {
@@ -240,7 +165,7 @@ public class BackAnnotate {
 		return m;
 	}
 	
-	public String renderContext(Entity e, SortedMap<Integer,SpanTag> spans) {
+	public void renderContext(List<Object> dst, Entity e, SortedMap<Integer,SpanTag> spans) {
 		final int recommendedTotalLen = 75;
 		final int minMargin = 7;
 		
@@ -281,7 +206,6 @@ public class BackAnnotate {
 				spans.tailMap(firstGap.getEnd())
 				.headMap(lastGap.getStart())
 			);
-		StringBuffer buff = new StringBuffer();
 		int start = -1;
 		for (Location l: locs) {
 			addSpanTag(m, l.getStart(), l.getEnd(), false, e);
@@ -289,10 +213,15 @@ public class BackAnnotate {
 		for (Location g: interleave_sorted) {
 			addSpanTag(m, g.getStart(), g.getEnd(), false, null);
 		}
-		renderSpan(buff, m);
-		return buff.toString().replaceAll("\\s+"," ");
+		renderSpan(dst, m);
 	}
 
+	public List<Object>  renderContext(Entity e, SortedMap<Integer,SpanTag> spans) {
+		LinkedList<Object> r = new LinkedList<Object>();
+		renderContext(r, e, spans);
+		return r;
+	}
+		
 	public static void main(String [] args) {
 		BackAnnotate back = new BackAnnotate("bat2");
 		for (int i=0; i<2000; ++i)

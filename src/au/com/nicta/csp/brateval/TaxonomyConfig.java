@@ -3,7 +3,14 @@ import java.lang.Character;
 import java.io.*;
 import java.util.ArrayList;
 
-public class TaxonomyConfig {
+/**
+ * Taxonomy Configuration
+ * 
+ * @author Andrey (Andreas) Scherbakov (andreas@softwareengineer.pro)
+ *
+ */
+ 
+ public class TaxonomyConfig {
 	public class EntityDesc {
 		String name;
 		EntityDesc(String s) {name = s;}

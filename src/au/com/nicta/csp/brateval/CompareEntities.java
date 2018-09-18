@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.Arrays;
 
 /**
  * 
@@ -33,7 +34,7 @@ public class CompareEntities
 	evaluate(folder1, folder2, exact_match, similarity_threshold);
   }
 
-  static void report(int level, String et, int TP, int FP, int FN) {
+  static void report(TableOut summary, int level, String et, int TP, int FP, int FN) {
       double precision = 0;
       double recall = 0;
       double f_measure = 0;
@@ -45,16 +46,15 @@ public class CompareEntities
       if ((precision+recall) > 0)
       { f_measure = (2*precision*recall)/(double)(precision+recall); }
     	
-      System.out.println(taxonomy.levelIndent(level) 
-      				   + et
-    		           + "|tp:" + TP 
-    		           + "|fp:" + FP 
-    		           + "|fn:" + FN
-    		           + "|precision:" + String.format("%1.4f", precision)
-    		           + "|recall:" + String.format("%1.4f", recall)
-    		           + "|f1:" + String.format("%1.4f", f_measure)
-    		           );
-}
+      summary.setCell(0,et);
+      summary.setCell(1,TP);
+      summary.setCell(2,FP);
+      summary.setCell(3,FN);
+      summary.setCell(4,String.format("%1.4f", precision));
+      summary.setCell(5,String.format("%1.4f", recall));
+      summary.setCell(6,String.format("%1.4f", f_measure));
+      summary.nextRow();
+  }
 
   public static void evaluate(String folder1, String folder2, boolean exact_match,
 			double similarity_threshold)
@@ -67,6 +67,7 @@ public class CompareEntities
 	Set <String> entityTypes = new TreeSet <String> ();
 
     File folder = new File(folder1);
+	TableOut mismatches = new TableOut(2);
 
     for (File file : folder.listFiles())
     {
@@ -116,10 +117,10 @@ public class CompareEntities
       		if (entityFP.get(e.getType()) == null)
       		{ entityFP.put(e.getType(), 1); }
       		else
-      		{ entityFP.put(e.getType(), entityFP.get(e.getType()) + 1); 
-      		    System.out.println("FP:" + back_annotate.locationInfo(e) + ": " + 
-      		    	(ref_map != null? back_annotate.renderContext(e,ref_map) : e));
-			}
+      		{ entityFP.put(e.getType(), entityFP.get(e.getType()) + 1);}
+  		    mismatches.setCell(0, back_annotate.locationInfo(e) + ": FP: ");
+  		    mismatches.setCell(1, (ref_map != null) ? back_annotate.renderContext(e,ref_map) : e);
+			mismatches.nextRow();
           }
     	}
 
@@ -148,8 +149,9 @@ public class CompareEntities
             { entityFN.put(e.getType(), 1); }
       		else
       		{ entityFN.put(e.getType(), entityFN.get(e.getType()) + 1); }
-            System.out.println("FN:" + back_annotate.locationInfo(e) + ": " +
-            	(ref_map != null ? back_annotate.renderContext(e,ref_map) :e));
+  		    mismatches.setCell(0, back_annotate.locationInfo(e) + ": FN: ");
+  		    mismatches.setCell(1, (ref_map != null) ? back_annotate.renderContext(e,ref_map) : e);
+			mismatches.nextRow();
           }
     	}
       }
@@ -157,6 +159,10 @@ public class CompareEntities
 
     System.out.println("");
     System.out.println("Summary");
+    TableOut summary = new TableOut(Arrays.asList(
+    	new Object[] {null,"tp","fp","fn","precision","recall","f1"}
+    ));
+    
 
     taxonomy.traverseEntities(new HierList.Visitor<TaxonomyConfig.EntityDesc>() {
 		public void pre(int level, TaxonomyConfig.EntityDesc curr,
@@ -182,7 +188,7 @@ public class CompareEntities
 		      int FP = (entityFP.get(et) == null ? 0 : entityFP.get(et));
 		      int FN = (entityFN.get(et) == null ? 0 : entityFN.get(et));
 			  if (show_full_taxonomy || TP + FP + FN > 0)
-				report(level, et, TP, FP, FN);
+				report(summary, level, et, TP, FP, FN);
 			  entityTypes.remove(et);
 		}
 		public void post(int level, TaxonomyConfig.EntityDesc curr,
@@ -194,7 +200,11 @@ public class CompareEntities
       int TP = (entityTP.get(et) == null ? 0 : entityTP.get(et));
       int FP = (entityFP.get(et) == null ? 0 : entityFP.get(et));
       int FN = (entityFN.get(et) == null ? 0 : entityFN.get(et));
-      report(0,et,TP,FP,FN);
+      report(summary,0,et,TP,FP,FN);
 	}
+	OutFormat summaryFmt = OutFormat.ofEnum(Options.common.outFmt);
+	System.out.println("CsvSummary:\n"+
+		summaryFmt.produceTable(mismatches)+
+		summaryFmt.produceTable(summary));
   }
 }

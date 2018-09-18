@@ -12,13 +12,15 @@ import java.lang.IllegalArgumentException;
 
  public class Options {
 	public static Options common = null;
-	public enum Highlight {
+
+	public enum OutFmt {
 		PLAIN,
+		CSV,
 		HTML,
 		TERMCOLOR
 	}
 		
-	public Highlight highlight = Highlight.PLAIN;
+	public OutFmt outFmt = OutFmt.PLAIN;
 	public String[] argv;
 	
 	static String toEnumName(String x) {
@@ -30,8 +32,8 @@ import java.lang.IllegalArgumentException;
 			if (argv[j].charAt(0) == '-') {
 				j++;
 				switch(argv[j-1]) {
-					case "-hl": case "-highlight":
-						highlight = Highlight.valueOf(toEnumName(argv[j]));
+					case "-of": case "-out-format":
+						outFmt = OutFmt.valueOf(toEnumName(argv[j]));
 						break;
 					default:
 						throw new IllegalArgumentException("Unsupported option" + argv[j]);
