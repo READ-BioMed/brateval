@@ -4,7 +4,7 @@ package au.com.nicta.csp.brateval;
  * 
  * Plain text output format specification class
  * 
- * @author Andrey (Andreas) Scerbakov (andreas@softwareengineer.pro)
+ * @author Andrey (Andreas) Scherbakov (andreas@softwareengineer.pro)
  *
  */
 

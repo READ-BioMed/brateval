@@ -4,7 +4,7 @@ package au.com.nicta.csp.brateval;
  * 
  * Table output producer
  * 
- * @author Andrey (Andreas) Scerbakov (andreas@softwareengineer.pro)
+ * @author Andrey (Andreas) Scherbakov (andreas@softwareengineer.pro)
  *
  */
 

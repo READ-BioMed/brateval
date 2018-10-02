@@ -67,7 +67,7 @@ public class CompareEntities
 	Set <String> entityTypes = new TreeSet <String> ();
 
     File folder = new File(folder1);
-	TableOut mismatches = new TableOut(2);
+	TableOut mismatches = new TableOut(3);
 
     for (File file : folder.listFiles())
     {
@@ -118,8 +118,9 @@ public class CompareEntities
       		{ entityFP.put(e.getType(), 1); }
       		else
       		{ entityFP.put(e.getType(), entityFP.get(e.getType()) + 1);}
-  		    mismatches.setCell(0, back_annotate.locationInfo(e) + ": FP: ");
-  		    mismatches.setCell(1, (ref_map != null) ? back_annotate.renderContext(e,ref_map) : e);
+  		    mismatches.setCell(0, back_annotate.locationInfo(e));
+  		    mismatches.setCell(1, "FP");
+  		    mismatches.setCell(2, (ref_map != null) ? back_annotate.renderContext(e,ref_map) : e.getString());
 			mismatches.nextRow();
           }
     	}
@@ -149,8 +150,9 @@ public class CompareEntities
             { entityFN.put(e.getType(), 1); }
       		else
       		{ entityFN.put(e.getType(), entityFN.get(e.getType()) + 1); }
-  		    mismatches.setCell(0, back_annotate.locationInfo(e) + ": FN: ");
-  		    mismatches.setCell(1, (ref_map != null) ? back_annotate.renderContext(e,ref_map) : e);
+  		    mismatches.setCell(0, back_annotate.locationInfo(e));
+  		    mismatches.setCell(1,"FN");
+  		    mismatches.setCell(2, (ref_map != null) ? back_annotate.renderContext(e,ref_map) : e.getString());
 			mismatches.nextRow();
           }
     	}
@@ -203,8 +205,9 @@ public class CompareEntities
       report(summary,0,et,TP,FP,FN);
 	}
 	OutFormat summaryFmt = OutFormat.ofEnum(Options.common.outFmt);
-	System.out.println("CsvSummary:\n"+
+	System.out.println(
 		summaryFmt.produceTable(mismatches)+
+		"Summary:\n"+
 		summaryFmt.produceTable(summary));
   }
 }

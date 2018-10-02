@@ -49,26 +49,29 @@ public class Entity
   public String getString()
   { return string; }
 
-  public String toString()
-  {
+  public String getLocationsString(String rangeSign, String rangeSeparator) {
 	StringBuilder locations = new StringBuilder();
 
-	if (l.size() > 0)
+	  	if (l.size() > 0)
 	{
       locations.append(l.get(0).getStart())
-               .append(" ")
+               .append(rangeSign)
                .append(l.get(0).getEnd());
 
       for (int i = 1; i < l.size(); i++)
       {
-        locations.append(";")
+        locations.append(rangeSeparator)
                  .append(l.get(i).getStart())
-                 .append(" ")
+                 .append(rangeSign)
                  .append(l.get(i).getEnd());
       }
 	}
-
-	return type + "|" + locations + "|" + string;
+	return locations.toString();
+  } 
+  
+  public String toString()
+  {
+	return type + "|" + getLocationsString(" ", ";") + "|" + string;
   }
 
   public static boolean entityComparison(Entity e1, Entity e2)
@@ -146,6 +149,6 @@ public class Entity
   
   public String locationInfo()
   {
-  	return getFile();
+  	return getFile() + ":" + getLocationsString("-", ";");
   }
 }

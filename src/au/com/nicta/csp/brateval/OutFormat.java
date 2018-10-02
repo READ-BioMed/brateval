@@ -8,7 +8,7 @@ import java.util.Iterator;
  * 
  * Output markup format abstract class
  * 
- * @author Andrey (Andreas) Scerbakov (andreas@softwareengineer.pro)
+ * @author Andrey (Andreas) Scherbakov (andreas@softwareengineer.pro)
  *
  */
 

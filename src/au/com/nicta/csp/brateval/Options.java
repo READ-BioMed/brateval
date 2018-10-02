@@ -6,7 +6,7 @@ import java.lang.IllegalArgumentException;
  * 
  * BRAT evaluator options
  * 
- * @author Andrey (Andreas) Scerbakov (andreas@softwareengineer.pro)
+ * @author Andrey (Andreas) Scherbakov (andreas@softwareengineer.pro)
  *
  */
 
