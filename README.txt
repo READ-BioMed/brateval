@@ -17,10 +17,10 @@ Change the name accordingly to run the examples below.
 
 Entities are evaluated using the following command:
 
-java -cp brateval.jar au.com.nicta.csp.brateval.CompareEntities reference_set_folder evaluation_set_folder exact_match
+java -cp brateval.jar au.com.nicta.csp.brateval.CompareEntities evaluation_set_folder groundtruth_set_folder exact_match
 
-reference_set_folder = reference folder
 evaluation_set_folder = folder with annotations to evaluate
+groundtruth_set_folder = reference folder
 exact_match = true - exact match of the entity span / false - overlap between entities span
 
 The entity evaluation results show the statistics for true positives, false negatives and false positives.
@@ -28,10 +28,10 @@ Two entities match when they to agree on the entity type and on the span of text
 
 Relations are evaluated using the following command:
 
-java -cp brateval.jar au.com.nicta.csp.brateval.CompareRelations reference_set_folder evaluation_set_folder exact_match verbose
+java -cp brateval.jar au.com.nicta.csp.brateval.CompareRelations evaluation_set_folder groundtruth_set_folder exact_match verbose
 
-reference_set_folder = reference folder
 evaluation_set_folder = folder with annotations to evaluate
+groundtruth_set_folder = reference folder
 exact_match = true - exact match of the entity span / false - overlap between entities span
 verbose = true - in addition to the overall comparison statistics, the program shows examples of true positives, false negatives and false positives / false - show only the overall comparison statistics
 
@@ -45,11 +45,11 @@ mvn install
 
 Based on the examples above, using maven consider the following call from the directory where the software was installed to perform entity comparison:
 
-mvn exec:java -Dexec.mainClass=au.com.nicta.csp.brateval.CompareEntities -Dexec.args="reference_set_folder evaluation_set_folder exact_match"
+mvn exec:java -Dexec.mainClass=au.com.nicta.csp.brateval.CompareEntities -Dexec.args="evaluation_set_folder groundtruth_set_folder exact_match"
 
 and the following one for relation comparison:
 
-mvn exec:java -Dexec.mainClass=au.com.nicta.csp.brateval.CompareRelations -Dexec.args="reference_set_folder evaluation_set_folder exact_match verbose"
+mvn exec:java -Dexec.mainClass=au.com.nicta.csp.brateval.CompareRelations -Dexec.args="evaluation_set_folder groundtruth_set_folder exact_match verbose"
 
 The software has been used to produce results for the Variome corpus presented in the following publication:
 
