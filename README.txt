@@ -26,6 +26,10 @@ exact_match = true - exact match of the entity span / false - overlap between en
 The entity evaluation results show the statistics for true positives, false negatives and false positives.
 Two entities match when they to agree on the entity type and on the span of text (exact or overlap span matches are available).
 
+To allow for Approximate Span match, use the following settings:
+java -cp brateval.jar au.com.nicta.csp.brateval.CompareEntities evaluation_set_folder groundtruth_set_folder false 1.0
+     (in this case, annotations will match if the boundaries of the annotation overlap, whether or not the type matches)
+
 Relations are evaluated using the following command:
 
 java -cp brateval.jar au.com.nicta.csp.brateval.CompareRelations evaluation_set_folder groundtruth_set_folder exact_match verbose
