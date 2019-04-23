@@ -14,6 +14,17 @@ import java.util.Arrays;
  * BRAT stand-off entity comparison
  * 
  * @author Antonio Jimeno Yepes (antonio.jimeno@nicta.com.au)
+ * @author Karin Verspoor (karin.verspoor@unimelb.edu.au)
+ *
+ * Parameter options:
+ * 1. [exact match] exact-match == 'true' : Type match + Exact span match (similarity-threshold not relevant)
+ * 2. [approximate string match] exact-match == 'false' && similarity-threshold < 1.0 :
+ *      Type match + Edit-distance-based comparison on entity annotations
+ *      (does not check spans; only looks for another Entity with string-level similarity)
+ * 3. [approximate boundary match] exact-match == 'false' && similarity-threshold == 1.0 :
+ *      Span overlap + allows Type mismatch
+ *      (only allows for differences in span boundaries and type of entity; 
+ *       doesn't check string-level similarity)
  *
  */
 public class CompareEntities
@@ -46,7 +57,7 @@ public class CompareEntities
       if ((precision+recall) > 0)
       { f_measure = (2*precision*recall)/(double)(precision+recall); }
     	
-      summary.setCell(0,et);
+      summary.setCell(0,taxonomy.levelPrefix(level) + et);
       summary.setCell(1,TP);
       summary.setCell(2,FP);
       summary.setCell(3,FN);
@@ -96,15 +107,29 @@ public class CompareEntities
 
           if (exact_match)
           {	match = d2.findEntity(e); }
-          else if (similarity_threshold < 1.0)
+          else if (similarity_threshold < 1.0) // approximate similarity match
           {	match = d2.findEntitySimilarString(e, similarity_threshold);
           	if (match != null && print_inexact && !e.getString().equals(match.getString()))
           		System.out.println("Inexact: " + e.getString() + " ~ " + match.getString()); 
            }
-          else
-          { match = d2.findEntityOverlapC(e); }
+          else // relaxed match plus similarity threshold of 1.0
+          { match = d2.findEntitySpanOverlap(e);
+	      if (match != null && print_inexact) { // some kind of match for e in d2, work out what kind
+		  // determine what kind of inexact match we have
+		  if ( !e.getString().equals(match.getString())) { // inexact Span
+		      if (!e.getType().equals(match.getType())) { // inexact Span + inexact Type
+			  System.out.println("[DOCUMENT:" + file.getName() + "] " + e.getType() + "|" + "Inexact-Span-and-TYPE: " + match.getType() + "|" + match.locationInfo() + "|" + match.getString());
+		      } else { // inexact Span + exact Type
+			  System.out.println("[DOCUMENT:" + file.getName() + "] " + e.getType() + "|" + "Inexact-Span: " + e.locationInfo() +"|" + e.getString() + " ~ " + match.locationInfo() + "|" + match.getString());
+		      }
+		  } else { // exact Span
+		      if (!e.getType().equals(match.getType())) { // inexact Type
+			  System.out.println("[DOCUMENT:" + file.getName() + "] " + e.getType() + "|" + "Inexact-TYPE: " + match.getType() + "|" + match.locationInfo() + "|" + match.getString());
+		      }
+		  } 
+	      }
+          } // end match step
 
-          //if (d2.findEntityOverlapC(e) != null)
           if (match != null)
     	  {
     		if (entityTP.get(e.getType()) == null)
@@ -142,8 +167,8 @@ public class CompareEntities
           		System.out.println("Inexact: " + e.getString() + " ~ " + match.getString()); 
  		  }
           else
-          { match = d1.findEntityOverlapC(e); }
-
+          { match = d1.findEntitySpanOverlap(e); }
+	      
           if (match == null)
           {
             if (entityFN.get(e.getType()) == null)

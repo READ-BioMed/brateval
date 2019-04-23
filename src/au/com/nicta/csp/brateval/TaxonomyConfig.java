@@ -7,10 +7,14 @@ import java.util.ArrayList;
  * Taxonomy Configuration
  * 
  * @author Andrey (Andreas) Scherbakov (andreas@softwareengineer.pro)
+ * @author Karin Verspoor (karin.verspoor@unimelb.edu.au)
  *
  */
  
  public class TaxonomyConfig {
+    public final int TOP_LEVEL = 0;
+    public final String TOP = "ALL";
+
 	public class EntityDesc {
 		String name;
 		EntityDesc(String s) {name = s;}
@@ -30,7 +34,16 @@ import java.util.ArrayList;
 		if (fn.isFile() && fn.canRead()) return fn;
 		return null;
 	}
-		
+
+    TaxonomyConfig(String confFile) {
+	    File fn = new File(confFile);
+	    if (!(fn.isFile() && fn.canRead())) {
+		    fn = null;
+		}
+
+	    readConfigFile(fn);
+	}  
+
 	TaxonomyConfig() {
 		readConfigFile(findConfigFile());
 	}
@@ -42,15 +55,17 @@ import java.util.ArrayList;
 	String consumeSection(BufferedReader r, EntryAdder a)
 		throws IOException {
 		String text;
+		a.add(this.TOP_LEVEL,this.TOP); // Dummy TOP node
+		int level_default = this.TOP_LEVEL + 1;
 		while ((text = r.readLine()) != null) {
-			int level = 0;
+			int level = level_default;
 			for (int i = 0; i < text.length() && Character.isWhitespace(text.charAt(i)); ++i)
 			switch (text.charAt(i)) {
 					case ' ': level ++;
 					break;
 					case '\t': level +=4;
 					break;
-					default: level = 0;
+					default: level = level_default;
 					break;
 			}
 			String s = text.trim();
@@ -117,6 +132,20 @@ import java.util.ArrayList;
 			}
 		return levelIndents.get(level);
 	}
+     
+     public String levelPrefix(int level) {
+         if (levelIndents.size() <= level ||
+             levelIndents.get(level) == null) {
+             StringBuffer buffer = new StringBuffer();
+             int j = level;
+             while (j >= 4) {buffer.append("+"); j-=4;}
+             while (j > 0) {buffer.append(" "); j--;}
+             while (levelIndents.size() <= level)
+                 levelIndents.add(null);
+             levelIndents.set(level, buffer.toString());
+         }
+         return levelIndents.get(level);
+     }
 	
 	public void traverseEntities(HierList.Visitor<EntityDesc> v) {
 		entities.traverse(v);

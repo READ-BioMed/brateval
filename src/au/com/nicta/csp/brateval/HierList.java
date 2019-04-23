@@ -24,14 +24,17 @@ public class HierList<E>
 			//if (j < entries.size()) return j;
 			//Visitor a = new Visitor(entities[j], parent);
 			v.pre(e0.level, e0.entry, parent);
-			if (!j.hasNext()) return null;
-			Elem e = j.next();
-			do
-				{
+
+			Elem e = null;
+			if (j.hasNext()) {
+                e = j.next();
+                do
+                {
 					if(e.level <= e0.level && parent != null) break;
 					e = traverse(v, j, e, e0.entry);
 				}
-			while (e != null);
+                while (e != null);
+			}
 			v.post(e0.level, e0.entry, parent);
 			return e;
 	}
