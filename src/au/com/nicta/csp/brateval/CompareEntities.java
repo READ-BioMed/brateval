@@ -118,13 +118,23 @@ public class CompareEntities
 		  // determine what kind of inexact match we have
 		  if ( !e.getString().equals(match.getString())) { // inexact Span
 		      if (!e.getType().equals(match.getType())) { // inexact Span + inexact Type
-			  System.out.println("[DOCUMENT:" + file.getName() + "] " + e.getType() + "|" + "Inexact-Span-and-TYPE: " + match.getType() + "|" + match.locationInfo() + "|" + match.getString());
+                  // TODO: Work out whether the types are related (i.e., one more specific than the other) or a 'clash'
+                  if ( e.getType().compareTo(match.getType()) > 0 ) {
+                      System.out.println("DOCUMENT:" + file.getName() + "|" + "Inexact-Span-and-TYPE|" + e.getType() + "|" + e.locationInfo() + "|" + e.getString() + " |~| " + match.getType() + "|" + match.locationInfo() + "|" + match.getString());
+                  } else {
+                      System.out.println("DOCUMENT:" + file.getName() + "|" + "Inexact-Span-and-TYPE|" + match.getType() + "|" + match.locationInfo() + "|" + match.getString() + " |~| " + e.getType() + "|" + e.locationInfo() + "|" + e.getString());
+                  }
+                  
 		      } else { // inexact Span + exact Type
-			  System.out.println("[DOCUMENT:" + file.getName() + "] " + e.getType() + "|" + "Inexact-Span: " + e.locationInfo() +"|" + e.getString() + " ~ " + match.locationInfo() + "|" + match.getString());
+                  System.out.println("DOCUMENT:" + file.getName() + "|" + "Inexact-Span|" + e.getType() + "|" + e.locationInfo() + "|" + e.getString() + " |~| " + match.getType() + "|" + match.locationInfo() + "|" + match.getString());
 		      }
 		  } else { // exact Span
 		      if (!e.getType().equals(match.getType())) { // inexact Type
-			  System.out.println("[DOCUMENT:" + file.getName() + "] " + e.getType() + "|" + "Inexact-TYPE: " + match.getType() + "|" + match.locationInfo() + "|" + match.getString());
+                  if ( e.getType().compareTo(match.getType()) > 0 ) {
+                      System.out.println("DOCUMENT:" + file.getName() + "|" + "Inexact-TYPE|" + e.getType() + "|" + e.locationInfo() + "|" + e.getString() + " |~| " + match.getType() + "|" + match.locationInfo() + "|" + match.getString());
+                  } else {
+                      System.out.println("DOCUMENT:" + file.getName() + "|" + "Inexact-TYPE|" + match.getType() + "|" + match.locationInfo() + "|" + match.getString() + " |~| " + e.getType() + "|" + e.locationInfo() + "|" + e.getString());
+                  }
 		      }
 		  } 
 	      }
