@@ -105,8 +105,8 @@ public class Entity
     {
       for (Location l2 : e2.getLocations())
       {
-    	if ((l1.getStart() >= l2.getStart() && l1.getStart() <= l2.getEnd())
-    	 || (l1.getEnd() >= l2.getStart() && l1.getEnd() <= l2.getEnd())
+    	if ((l1.getStart() >= l2.getStart() && l1.getStart() < l2.getEnd())
+    	 || (l1.getEnd() > l2.getStart() && l1.getEnd() <= l2.getEnd())
         )
     	{ return true; }
       }
