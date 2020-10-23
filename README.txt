@@ -13,7 +13,7 @@ After downloading brateval, it is possible to generate a jar file using maven:
 mvn install
 
 The jar file will be under the target folder. The name of the generated jar file contains the version of the software, e.g. BRATEval-0.0.1-SNAPSHOT.jar.
-Change the name accordingly to run the examples below.
+Change the name "brateval.jar" accordingly to run the examples below.
 
 Entities are evaluated using the following command:
 
@@ -23,12 +23,18 @@ evaluation_set_folder = folder with annotations to evaluate
 groundtruth_set_folder = reference folder
 exact_match = true - exact match of the entity span / false - overlap between entities span
 
-The entity evaluation results show the statistics for true positives, false negatives and false positives.
+The entity evaluation results show the overall statistics for true positives, false negatives and false positives.
 Two entities match when they to agree on the entity type and on the span of text (exact or overlap span matches are available).
 
 To allow for Approximate Span match, use the following settings:
 java -cp brateval.jar au.com.nicta.csp.brateval.CompareEntities evaluation_set_folder groundtruth_set_folder false 1.0
      (in this case, annotations will match if the boundaries of the annotation overlap, whether or not the type matches)
+
+To print detailed results of all individual False Positive and False Negative matches, as well as inexact span or type-based matches, add the "-v" ("-verbose") option.
+When an annotation.conf file containing the full set of entities, including potentially entities in a hierarchy, is supplied, add the "-ft" ("-print-full-taxonomy") option to force all entities to be listed in the results.
+
+For instance, with both of these values set, run:
+java -cp brateval.jar au.com.nicta.csp.brateval.CompareEntities evaluation_set_folder groundtruth_set_folder -ft -v false 1.0
 
 Relations are evaluated using the following command:
 

@@ -32,6 +32,7 @@ import java.util.ArrayList;
 	static File findConfigFile() {
 		File fn = new File("./annotation.conf");
 		if (fn.isFile() && fn.canRead()) return fn;
+		System.out.println("Annotation taxonomy ignored. No file 'annotation.conf' found in current directory " + System.getProperty("user.dir"));
 		return null;
 	}
 
@@ -39,6 +40,7 @@ import java.util.ArrayList;
 	    File fn = new File(confFile);
 	    if (!(fn.isFile() && fn.canRead())) {
 		    fn = null;
+		    System.out.println("Annotation taxonomy ignored. No file " + confFile + " found.");
 		}
 
 	    readConfigFile(fn);

@@ -1,6 +1,6 @@
 package au.com.nicta.csp.brateval;
 
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -25,19 +25,23 @@ import java.util.*;
  */
 public class CompareEntities
 {
-	static  boolean print_inexact = false;
-	static  boolean show_full_taxonomy = false;
+	static  boolean verbose_output;
+	static  boolean show_full_taxonomy;
 	static  TaxonomyConfig taxonomy = new TaxonomyConfig();
 
 	public static void main (String argc []) throws Exception
 	{
 		Options.common = new Options(argc);
+		verbose_output = Options.common.verbose;
+		show_full_taxonomy = Options.common.show_full_taxonomy;
+		
 		String folder1 = Options.common.argv[0];
 		String folder2 = Options.common.argv[1];
 		boolean exact_match = Boolean.parseBoolean(Options.common.argv[2]);
 		double	similarity_threshold = (Options.common.argv.length > 3) ?
 				Double.parseDouble(Options.common.argv[3]) : 1.0;
 
+		System.out.println("Evaluating F1: " + folder1 + " F2: " + folder2 + " Match setting: " + exact_match + " Threshold: " + similarity_threshold);
 		evaluate(folder1, folder2, exact_match, similarity_threshold);
 	}
 
@@ -63,6 +67,25 @@ public class CompareEntities
 		summary.nextRow();
 	}
 
+
+    public static void collectValidFiles(File dir, LinkedList<File> fileList) {
+		try {
+			File[] files = dir.listFiles();
+			
+			for (File file : files) {
+				if (file.isDirectory()) {
+				    if (verbose_output)
+					System.out.println("directory:" + file.getCanonicalPath());
+				    collectValidFiles(file, fileList);
+				} else if (file.getName().endsWith(".ann")) {
+					fileList.add(file);
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}    
+
 	public static void evaluate(String folder1, String folder2, boolean exact_match,
 								double similarity_threshold)
 			throws Exception
@@ -73,35 +96,53 @@ public class CompareEntities
 		Integer allTP = 0;
 		Integer allFP = 0;
 		Integer allFN = 0;
-
 		Set <String> entityTypes = new TreeSet <String> ();
-
-		File folder = new File(folder1);
 		TableOut mismatches = new TableOut(3);
-		File[] validFiles = new File(folder2).listFiles();
-		LinkedList<String> validFileNames = new LinkedList<>();
-		for (File file: validFiles){
-			if (file.getName().endsWith(".ann")) {
-				validFileNames.add(file.getName());
-			}
-		}
 
-		for (File file : folder.listFiles())
+		File folder1File = new File(folder1);
+		Path folder1Path = folder1File.toPath();
+		File folder2File = new File(folder2);
+		Path folder2Path = folder2File.toPath();
+		LinkedList<File> validFiles1 = new LinkedList<>();
+		LinkedList<File> validFiles2 = new LinkedList<>();
+		collectValidFiles(folder1File, validFiles1);
+		collectValidFiles(folder2File, validFiles2);
+
+		for (File file : validFiles1)
 		{
+		        if (verbose_output)
+			    System.out.println("Processing: " + file.getName());
 			String baseName = file.getName();
-			String txtName = baseName.substring(0, baseName.lastIndexOf('.')) + ".txt";
-			if (baseName.endsWith(".ann") && validFileNames.contains(baseName))
+			Path path = file.toPath();
+			Path relPath = folder1Path.relativize(path);
+
+			// find corresponding file in folder2
+			File file2 = null;
+			Path path2 = null;
+			for (File validFile2 : validFiles2)
 			{
-				validFileNames.remove(baseName);
+			    Path validPath2 = validFile2.toPath();
+			    Path relPath2 = folder2Path.relativize(validPath2);
+			    if (relPath.equals(relPath2)) {
+				file2 = validFile2;
+				path2 = validPath2;
+			    }
+			}
+			
+			if (file2 != null)
+			{
+				validFiles2.remove(file2);
+
+				// find text files
+				String txtName = baseName.substring(0, baseName.lastIndexOf('.')) + ".txt";
 				BackAnnotate back_annotate = new BackAnnotate(
-						new String[]{folder1 + File.separator +  txtName,
-								folder2 + File.separator +  txtName});
+									      new String[]{path.getParent() +  txtName,
+											   path2.getParent() +  txtName});
 
 				TreeMap<Integer,BackAnnotate.SpanTag> ref_map = null;
-				Document d1 = Annotations.read(file.getAbsolutePath(),
-						Paths.get(folder1, file.getName()).toString());
-				Document d2 = Annotations.read(folder2 + File.separator +  file.getName(),
-						Paths.get(folder2, file.getName()).toString());
+
+				Document d1 = Annotations.read(file.getAbsolutePath(), path.toString());
+				Document d2 = Annotations.read(file2.getAbsolutePath(), path2.toString());
 
 				if (back_annotate.hasSource()) {
 					ref_map = BackAnnotate.makeTagMap(d2.getEntities());
@@ -112,16 +153,19 @@ public class CompareEntities
 
 					Entity match = null;
 
+					//System.out.println("Processing Entity " + e.toString());
+
 					if (exact_match)
 					{	match = d2.findEntity(e); }
 					else if (similarity_threshold < 1.0) // approximate similarity match
 					{	match = d2.findEntitySimilarString(e, similarity_threshold);
-						if (match != null && print_inexact && !e.getString().equals(match.getString()))
+						if (match != null && verbose_output && !e.getString().equals(match.getString()))
 							System.out.println("Inexact: " + e.getString() + " ~ " + match.getString());
 					}
 					else // relaxed match plus similarity threshold of 1.0
-					{ match = d2.findEntityOverlap(e);
-						if (match != null && print_inexact) { // some kind of match for e in d2, work out what kind
+					{ match = d2.findEntityOverlapNoType(e);
+						if (match != null && verbose_output) { // some kind of match for e in d2, work out what kind
+						    //System.out.println("Match to Entity " + match.toString());
 							// determine what kind of inexact match we have
 							if ( !e.getString().equals(match.getString())) { // inexact Span
 								if (!e.getType().equals(match.getType())) { // inexact Span + inexact Type
@@ -144,6 +188,8 @@ public class CompareEntities
 									}
 								}
 							}
+						} else {
+						    //System.out.println("No Match!");
 						}
 					}// end match step
 
@@ -160,6 +206,10 @@ public class CompareEntities
 						{ entityFP.put(e.getType(), 1); }
 						else
 						{ entityFP.put(e.getType(), entityFP.get(e.getType()) + 1);}
+
+						if (verbose_output)
+						    System.out.println("DOCUMENT:" + file.getName() + "|" + "FALSE_POSITIVE|" + e.getType() + "|" + e.locationInfo() + "|" + e.getString());
+
 						mismatches.setCell(0, back_annotate.locationInfo(e));
 						mismatches.setCell(1, "FP");
 						mismatches.setCell(2, (ref_map != null) ? back_annotate.renderContext(e,ref_map) : e.getString());
@@ -181,11 +231,11 @@ public class CompareEntities
 					}
 					else if (similarity_threshold < 1.0)
 					{	match = d1.findEntitySimilarString(e, similarity_threshold);
-						if (match != null && print_inexact && !e.getString().equals(match.getString()))
+						if (match != null && verbose_output && !e.getString().equals(match.getString()))
 							System.out.println("Inexact: " + e.getString() + " ~ " + match.getString());
 					}
 					else
-					{ match = d1.findEntityOverlap(e); }
+					{ match = d1.findEntityOverlapNoType(e); }
 
 					if (match == null)
 					{
@@ -193,6 +243,10 @@ public class CompareEntities
 						{ entityFN.put(e.getType(), 1); }
 						else
 						{ entityFN.put(e.getType(), entityFN.get(e.getType()) + 1); }
+
+						if (verbose_output)
+						    System.out.println("DOCUMENT:" + file.getName() + "|" + "FALSE_NEGATIVE|" + e.getType() + "|" + e.locationInfo() + "|" + e.getString());
+						
 						mismatches.setCell(0, back_annotate.locationInfo(e));
 						mismatches.setCell(1,"FN");
 						mismatches.setCell(2, (ref_map != null) ? back_annotate.renderContext(e,ref_map) : e.getString());
@@ -202,8 +256,8 @@ public class CompareEntities
 			}
 
 		}
-		if(!validFileNames.isEmpty()){
-			throw new Exception("mandantory file is missing");
+		if(!validFiles2.isEmpty()){
+			throw new Exception("mandatory file is missing");
 		}
 
 		TableOut summary = new TableOut(Arrays.asList(
