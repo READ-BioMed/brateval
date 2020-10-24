@@ -2,6 +2,11 @@ package au.com.nicta.csp.brateval;
 
 import java.util.LinkedList;
 
+import javax.lang.model.util.ElementScanner14;
+
+import au.com.nicta.csp.brateval.MatchType.SpanMatch;
+import au.com.nicta.csp.brateval.MatchType.TypeMatch;
+
 /**
  * Entity class
  * 
@@ -74,32 +79,55 @@ public class Entity
 	return type + "|" + getLocationsString(" ", ";") + "|" + string;
   }
 
-  public static boolean entityComparison(Entity e1, Entity e2)
+  public static boolean entityComparisonExactType(Entity e1, Entity e2)
   {
-  	if (e1.getType().equals(e2.getType())
-   	 && e1.getString().toLowerCase().equals(e2.getString().toLowerCase())
-   	)
-   	{
-      for (Location l1 : e1.getLocations())
-  	  {
-    	boolean match = false ;
+  	return (e1.getType().equals(e2.getType()));
+  }
 
-  	    for (Location l2 : e2.getLocations())
-  	    {
-          if (l1.getStart() == l2.getStart() && l1.getEnd() == l2.getEnd())
-  	      { match = true; }
-  	    }
+  public static boolean entityComparisonExactString(Entity e1, Entity e2)
+  {
+  	return (e1.getString().toLowerCase().equals(e2.getString().toLowerCase()));
+  }
 
-  	    if (!match) { return false; }
-  	  }
+  public static boolean entityComparisonExactSpan(Entity e1, Entity e2)
+  {
+    for (Location l1 : e1.getLocations())
+    {
+    boolean match = false ;
 
-  	  return true;
-   	}
+      for (Location l2 : e2.getLocations())
+      {
+        if (l1.getStart() == l2.getStart() && l1.getEnd() == l2.getEnd())
+        { match = true; }
+      }
+
+      if (!match) { return false; }
+    }
+
+    return true;
+  }
+
+  public static boolean entityComparisonExact(Entity e1, Entity e2)
+  {
+  	if ( entityComparisonExactType(e1, e2)
+      && entityComparisonExactString(e1, e2)
+      && entityComparisonExactSpan(e1, e2))
+    { return true; }
   	else
   	{ return false; }
   }
 
-  private static boolean entityCompareOverlap(Entity e1, Entity e2)
+  public static boolean entityComparisonSpanOverlap(Entity e1, Entity e2)
+  {
+  	if ((entityCompareOverlapSpan(e1, e2) || entityCompareOverlapSpan(e2, e1))
+   	)
+   	{ return true; }
+
+  	return false;
+  }
+
+  // Helper function for above public function; checks overlap in one direction
+  private static boolean entityCompareOverlapSpan(Entity e1, Entity e2)
   {
     for (Location l1 : e1.getLocations())
     {
@@ -114,25 +142,6 @@ public class Entity
 	  
 	return false;  
   }
-
-  public static boolean entityComparisonOverlap(Entity e1, Entity e2)
-  {
-  	if (e1.getType().equals(e2.getType())
-   	 && (entityComparisonSpanOverlap(e1, e2))
-   	)
-   	{ return true; }
-
-  	return false;
-  }
-
-  public static boolean entityComparisonSpanOverlap(Entity e1, Entity e2)
-  {
-  	if ((entityCompareOverlap(e1, e2) || entityCompareOverlap(e2, e1))
-   	)
-   	{ return true; }
-
-  	return false;
-  }
   
   public static double entityComparisonStringSimilarity(Entity e1, Entity e2,
   	double similarity_threshold)
@@ -145,6 +154,71 @@ public class Entity
    	{ return 1.0 - ((double)dist)/((double)l); }
 
   	return 0.0 ;
+  }
+
+  public static boolean entityComparisonOverlap(Entity e1, Entity e2)
+  {
+  	if (e1.getType().equals(e2.getType())
+   	 && (entityComparisonSpanOverlap(e1, e2))
+   	)
+   	{ return true; }
+
+  	return false;
+  }
+
+  public static EntityMatchResult getMatchResult(Entity e1, Entity e2, MatchType mt)
+  {
+    EntityMatchResult matchResult = new EntityMatchResult();
+    matchResult.setE1(e1);
+    matchResult.setE2(e2);
+    SpanMatch mtSpanMatch = mt.getSpanMatchType();
+
+    boolean someMatch = false;
+
+    // Check for nature of span/string overlap
+    // Get the most specific type of overlap (prefer EXACT)
+    if ( entityComparisonExactSpan(e1, e2) ) {
+      matchResult.setSpanMatchType(SpanMatch.EXACT);
+      someMatch = true;     
+    } else if ( mtSpanMatch == SpanMatch.OVERLAP ) { // look for span overlap if match type allows it
+      if ( entityComparisonSpanOverlap(e1, e2) ) {
+        matchResult.setSpanMatchType(SpanMatch.OVERLAP);
+        someMatch = true;
+      }
+    } else if ( mtSpanMatch == SpanMatch.APPROXIMATE ) { // look for approximate string match if match type allows it
+      if ( entityComparisonSpanOverlap(e1, e2) ) { // entities must overlap
+        double sim = entityComparisonStringSimilarity(e1, e2, mt.getSimThreshold() ); // entities must also be similar
+        if ( sim > 0.0 ) {
+          matchResult.setSpanMatchType(SpanMatch.APPROXIMATE);
+          matchResult.setMatchSim(sim);
+          someMatch = true;
+        }
+      }
+    }
+
+    if (someMatch) {
+      // Set type equivalence in matchResult
+      if ( entityComparisonExactType(e1, e2) ) {
+        matchResult.setTypeMatchType(TypeMatch.EXACT);
+      } else {
+        matchResult.setTypeMatchType(TypeMatch.INEXACT);
+      }
+
+      // Check mt parameters to make sure the match type constraints are satisfied
+      switch (mt.getTypeMatchType()) {
+        case EXACT:
+          if ( matchResult.getTypeMatchType() == TypeMatch.EXACT )
+            return matchResult;
+          else // TypeMatch is not exact but needs to be
+            return null;
+        case INEXACT:
+        case HIERARCHICAL:
+          return matchResult;
+      }
+
+    }
+
+    return null;
   }
   
   public String locationInfo()

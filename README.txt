@@ -17,24 +17,37 @@ Change the name "brateval.jar" accordingly to run the examples below.
 
 Entities are evaluated using the following command:
 
-java -cp brateval.jar au.com.nicta.csp.brateval.CompareEntities evaluation_set_folder groundtruth_set_folder exact_match
+java -cp brateval.jar au.com.nicta.csp.brateval.CompareEntities evaluation_set_folder groundtruth_set_folder 
 
-evaluation_set_folder = folder with annotations to evaluate
-groundtruth_set_folder = reference folder
-exact_match = true - exact match of the entity span / false - overlap between entities span
+evaluation_set_folder = folder with annotations to evaluate. This can also be introduced with the commmand line parameter "-e folder".
+groundtruth_set_folder = reference (gold) folder. This can also be introduced with the commmand line parameter "-g folder".
 
 The entity evaluation results show the overall statistics for true positives, false negatives and false positives.
-Two entities match when they to agree on the entity type and on the span of text (exact or overlap span matches are available).
+Two entities match when they to agree on the entity type and on the span of text.
 
-To allow for Approximate Span match, use the following settings:
-java -cp brateval.jar au.com.nicta.csp.brateval.CompareEntities evaluation_set_folder groundtruth_set_folder false 1.0
+The default mode of comparison is EXACT: exact span match, exact type match.
+To allow for relaxed matches, there are options to relax each of these.
+
+For spans, there are three options: EXACT, OVERLAP, and APPROXIMATE. These are set with the "-s OPTION" or "-span-match OPTION" parameters.
+"-s overlap" allows two entities to match if their boundaries overlap (at all).
+"-s approx threshold" or "-s approximate threshold" is an overlap match with the additional constraint that the entities must be similar, according to some edit-distance based similarity threshold.
+
+So for example, an approximate span match using a 0.8 similarity threshold would be run as: 
+
+java -cp brateval.jar au.com.nicta.csp.brateval.CompareEntities evaluation_set_folder groundtruth_set_folder -s approx 0.8
      (in this case, annotations will match if the boundaries of the annotation overlap, whether or not the type matches)
+
+For entity type matches, there are also three options: EXACT, INEXACT, and HIERARCHICAL. These are set with the "-t OPTION" or "-type-match OPTION" parameters.
+"-t inexact" allows two entities to match even if their type labels are not the same.
+"-t hierarchical" allows two entities to match only if one type label is more general than the other. This is not currently implemented and falls back to "inexact".
 
 To print detailed results of all individual False Positive and False Negative matches, as well as inexact span or type-based matches, add the "-v" ("-verbose") option.
 When an annotation.conf file containing the full set of entities, including potentially entities in a hierarchy, is supplied, add the "-ft" ("-print-full-taxonomy") option to force all entities to be listed in the results.
 
-For instance, with both of these values set, run:
-java -cp brateval.jar au.com.nicta.csp.brateval.CompareEntities evaluation_set_folder groundtruth_set_folder -ft -v false 1.0
+For instance, with both of these values set, and an overlap span plus inexact type match, use:
+java -cp brateval.jar au.com.nicta.csp.brateval.CompareEntities -e evaluation_set_folder -g groundtruth_set_folder -ft -v -s overlap -t inexact
+
+
 
 Relations are evaluated using the following command:
 
@@ -49,6 +62,8 @@ The relation evaluation results shows the statistics for true positives, false n
 Two relations match when the entities and the relation type match.
 The statistics show when the statistics for relations in which the entities are matched in the reference set but the relation does not exist in the reference set.
 
+
+
 It is possible to run the software directly using maven after installing it:
 
 mvn install
@@ -59,7 +74,7 @@ mvn exec:java -Dexec.mainClass=au.com.nicta.csp.brateval.CompareEntities -Dexec.
 
 and the following one for relation comparison:
 
-mvn exec:java -Dexec.mainClass=au.com.nicta.csp.brateval.CompareRelations -Dexec.args="evaluation_set_folder groundtruth_set_folder exact_match verbose"
+mvn exec:java -Dexec.mainClass=au.com.nicta.csp.brateval.CompareRelations -Dexec.args="evaluation_set_folder groundtruth_set_folder exact_match -verbose"
 
 The software has been used to produce results for the Variome corpus presented in the following publication:
 

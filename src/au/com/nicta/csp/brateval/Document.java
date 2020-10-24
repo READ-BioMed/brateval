@@ -7,6 +7,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import au.com.nicta.csp.brateval.MatchType.SpanMatch;
+import au.com.nicta.csp.brateval.MatchType.TypeMatch;
+
+
 /**
  * Document class, it includes implementations for entity and relation comparisons 
  * 
@@ -113,39 +117,6 @@ public class Document
 
 	return subentities;
   }
-  
-  public Entity findEntityOverlap(Entity e)
-  {
-    for (Entity e1 : entities.values())
-    {
-      if (Entity.entityComparisonOverlap(e, e1))
-      { return e1; }
-    }
-
-	return null;
-  }
-
-  public Entity findEntityOverlapNoType(Entity e)
-  {
-    for (Entity e1 : entities.values())
-    {
-      if (Entity.entityComparisonSpanOverlap(e, e1))
-      { return e1; }
-    }
-
-	return null;
-  }
-  
-  public Entity findEntitySpanOverlap(Entity e)
-  {
-    for (Entity e1 : entities.values())
-    {
-      if (Entity.entityComparisonSpanOverlap(e, e1) && !e.equals(e1))
-      { return e1; }
-    }
-
-	return null;
-  }
 
   public boolean hasEntitySpanOverlapNC(Entity e)
   {
@@ -164,7 +135,7 @@ public class Document
 
     for (Entity e1 : entities.values())
     {
-      if (Entity.entityComparisonSpanOverlap(e, e1) || Entity.entityComparisonSpanOverlap(e1, e))
+      if (Entity.entityComparisonSpanOverlap(e, e1) )
       {
         if (!e.equals(e1))
         { entities_span.add(e1); }
@@ -174,26 +145,29 @@ public class Document
 	return entities_span;
   }
   
-  public Entity findEntity(Entity e)
+  public EntityMatchResult findEntityExact(Entity e)
   {
     for (Entity e1 : entities.values())
     {
-      if (Entity.entityComparison(e, e1) && !e.equals(e1))
-      { return e1; }
+      if (Entity.entityComparisonExact(e, e1) && !e.equals(e1))
+      { return new EntityMatchResult(true, SpanMatch.EXACT, TypeMatch.EXACT, e, e1 ); }
     }
 
-	return null;
+	  return null;
   }
 
-  public Entity findEntityOverlapC(Entity e)
+  public EntityMatchResult findEntity(Entity e, MatchType mt)
   {
     for (Entity e1 : entities.values())
     {
-      if (e1.getType().equals(e.getType()) && Entity.entityComparisonSpanOverlap(e, e1) && !e.equals(e1))
-      { return e1; }
+      EntityMatchResult resultE1 = Entity.getMatchResult(e, e1, mt);
+
+      if ( resultE1 != null && !e.equals(e1) ) {
+        return resultE1;
+      }
     }
 
-	return null;
+	  return null;
   }
   
   public Entity findEntitySimilarString(Entity e, double min_similarity) {
@@ -254,13 +228,13 @@ public class Document
       // Compare relation type
       if (relation.getRelationType().equals(rd.getRelationType())
       && ((
-          Entity.entityComparison(relation.getEntity1(), rd.getEntity1())
-      &&  Entity.entityComparison(relation.getEntity2(), rd.getEntity2())
+          Entity.entityComparisonExact(relation.getEntity1(), rd.getEntity1())
+      &&  Entity.entityComparisonExact(relation.getEntity2(), rd.getEntity2())
     	 )
       // Order does not matter
       || (
-           Entity.entityComparison(relation.getEntity1(), rd.getEntity2())
-       &&  Entity.entityComparison(relation.getEntity2(), rd.getEntity1())
+           Entity.entityComparisonExact(relation.getEntity1(), rd.getEntity2())
+       &&  Entity.entityComparisonExact(relation.getEntity2(), rd.getEntity1())
        	 )
       )
       )
@@ -278,7 +252,7 @@ public class Document
   {
     for (Relation r : getRelations())
     {
-      if (Entity.entityComparison(e, r.getEntity1()) || Entity.entityComparison(e, r.getEntity2()))
+      if (Entity.entityComparisonExact(e, r.getEntity1()) || Entity.entityComparisonExact(e, r.getEntity2()))
       { return true; }
     }
 

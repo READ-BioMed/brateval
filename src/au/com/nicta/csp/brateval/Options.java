@@ -1,13 +1,16 @@
 package au.com.nicta.csp.brateval;
+import au.com.nicta.csp.brateval.MatchType.SpanMatch;
+import au.com.nicta.csp.brateval.MatchType.TypeMatch;
+
 import java.util.Vector;
 import java.lang.IllegalArgumentException;
-import java.util.ArrayList;
 
 /**
  * 
  * BRAT evaluator options
  * 
  * @author Andrey (Andreas) Scherbakov (andreas@softwareengineer.pro)
+ * @author Karin Verspoor (karin.verspoor@unimelb.edu.au)
  *
  */
 
@@ -21,18 +24,31 @@ import java.util.ArrayList;
 		HTML,
 		TERMCOLOR
 	}
+
 		
 	public OutFmt outFmt = OutFmt.PLAIN;
 
+	// options related to annotation folders
+	public String goldFolder; // name of folder for gold standard annotations
+	public String compFolder; // name of folder for annotations to be compared to gold standard
+     
+	// options related to matching
+	public MatchType matchType; // specify how spans are treated for matching
+
 	public boolean verbose = false; // print full details of TP, FP, FN, etc.
-	public boolean hierarchical = false;     
  	public boolean show_full_taxonomy = false;  // print all levels of the taxonomy, even if no annotations at a level
      
 	static String toEnumName(String x) {
 		return x.replaceAll("[^A-Za-z0-9]","").toUpperCase();
 	}
+     
 	public Options(String [] argv) {
 		Vector<String> av = new Vector<String>(argv.length);
+		matchType = new MatchType();
+
+		goldFolder = null;
+		compFolder = null;
+
 		for (int j=0; j<argv.length; ++j) {
 			if (argv[j].charAt(0) == '-') {
 				switch(argv[j]) {
@@ -43,65 +59,50 @@ import java.util.ArrayList;
 					case "-v": case "-verbose":
 						verbose = true;
 						break;
-					case "-h": case "-hierarchical":
-						hierarchical = true;
+					case "-g": case "-gold": // gold folder
+						j++;
+						goldFolder = argv[j];
+						break;
+					case "-e": case "-eval": // folder to evaluate against gold data
+						j++;
+						compFolder = argv[j];
 						break;
 					case "-ft": case "-print-full-taxonomy":
 						show_full_taxonomy = true;
 						break;
+					case "-s": case "-span-match":
+					    j++;
+					    String spanSelection = argv[j];
+						if (spanSelection.equalsIgnoreCase("approx") || spanSelection.equalsIgnoreCase("approximate")) {
+						    spanSelection = "APPROXIMATE";
+						    j++; // also get similarity value
+							double sim = Double.parseDouble(argv[j]);
+							matchType.setSimThreshold(sim);
+						}
+						matchType.setSpanMatchType(SpanMatch.valueOf(toEnumName(spanSelection)));
+						break;
+					case "-t": case "-type-match":
+					    j++;
+					    String typeSelection = argv[j];
+						if (typeSelection.equalsIgnoreCase("hier"))
+							typeSelection = "HIERARCHICAL";
+						matchType.setTypeMatchType(TypeMatch.valueOf(toEnumName(typeSelection)));
+						break;
 					default:
 						throw new IllegalArgumentException("Unsupported option" + argv[j]);
 				}
-			} else av.add(argv[j]);
+			} else { 
+				// assume first non "-" argument is the comparator folder, and second is the gold folder
+				if ( compFolder == null)
+					compFolder = argv[j];
+				else if ( goldFolder == null )
+					goldFolder = argv[j];
+				else av.add(argv[j]);
+			}
 		}
 		av.toArray(this.argv = new String[av.size()]);
 	}
 
-     /*
-    public void parse(String[] args)
-    {
-        arguments = new ArrayList();
-        for ( int i = 0; i < args.length; i++ ) {
-            arguments.add(args[i]);
-        }
-    }
-
-    public int size()
-    {
-        return arguments.size();
-    }
-
-    public boolean hasOption(String option)
-    {
-        boolean hasValue = false;
-        String str;
-        for ( int i = 0; i < arguments.size(); i++ ) {
-            str = (String)arguments.get(i);
-            if ( true == str.equalsIgnoreCase(option) ) {
-                hasValue = true;
-                break;
-            }
-        }
-
-        return hasValue;
-    }
-
-    public String valueOf(String option)
-    {
-        String value = null;
-        String str;
-
-        for ( int i = 0; i < arguments.size(); i++ ) {
-            str = (String)arguments.get(i);
-            if ( true == str.equalsIgnoreCase(option) ) {
-                value = (String)arguments.get(i+1);
-                break;
-            }
-        }
-
-        return value;
-    }
-     */
 
 	public  static void main(String [] argv) {
 		Options.common = new Options(argv);
