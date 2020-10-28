@@ -30,7 +30,7 @@ import java.util.ArrayList;
 	HierList<RelationDesc> relations = new HierList<RelationDesc>();
 	
 	static File findConfigFile() {
-		File fn = new File("./annotation.conf");
+		File fn = new File("annotation.conf");
 		if (fn.isFile() && fn.canRead()) return fn;
 		System.out.println("Annotation taxonomy ignored. No file 'annotation.conf' found in current directory " + System.getProperty("user.dir"));
 		return null;

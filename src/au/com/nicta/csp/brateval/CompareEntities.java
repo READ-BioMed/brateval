@@ -5,8 +5,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
-import au.com.nicta.csp.brateval.MatchType.SpanMatch;
-import au.com.nicta.csp.brateval.MatchType.TypeMatch;
 
 /**
  *
@@ -21,22 +19,20 @@ public class CompareEntities
 {
 	static  boolean verbose_output;
 	static  boolean show_full_taxonomy;
-	static  TaxonomyConfig taxonomy = new TaxonomyConfig();
+	static  TaxonomyConfig taxonomy;
 
 	public static void main (String argc []) throws Exception
 	{
 		Options.common = new Options(argc);
 		verbose_output = Options.common.verbose;
+		taxonomy = new TaxonomyConfig(Options.common.configFile);
 		show_full_taxonomy = Options.common.show_full_taxonomy;
 		
-		String compFolder = Options.common.compFolder;
+		String evalFolder = Options.common.evalFolder;
 		String goldFolder = Options.common.goldFolder;
-		//		boolean exact_match = Boolean.parseBoolean(Options.common.argv[2]);
-		//double	similarity_threshold = (Options.common.argv.length > 3) ?
-		//		Double.parseDouble(Options.common.argv[3]) : 1.0;
 
-		System.out.println("Evaluating Folder: " + compFolder + " against Gold Folder: " + goldFolder + " Match settings : " + Options.common.matchType.toString() );
-		evaluate(compFolder, goldFolder, Options.common.matchType);
+		System.out.println("Evaluating Folder: " + evalFolder + " against Gold Folder: " + goldFolder + " Match settings : " + Options.common.matchType.toString() );
+		evaluate(goldFolder, evalFolder, Options.common.matchType);
 	}
 
 	static void report(TableOut summary, int level, String et, int TP, int FP, int FN) {
@@ -80,7 +76,7 @@ public class CompareEntities
 		}
 	}    
 
-    public static void evaluate(String folder1, String folder2, MatchType mt)
+    public static void evaluate(String goldFolder, String evalFolder, MatchType mt)
 			throws Exception
 	{
 		Map <String, Integer> entityTP = new TreeMap <String, Integer> ();
@@ -92,39 +88,41 @@ public class CompareEntities
 		Set <String> entityTypes = new TreeSet <String> ();
 		TableOut mismatches = new TableOut(3);
 
-		File folder1File = new File(folder1);
-		Path folder1Path = folder1File.toPath();
-		File folder2File = new File(folder2);
-		Path folder2Path = folder2File.toPath();
-		LinkedList<File> validFiles1 = new LinkedList<>();
-		LinkedList<File> validFiles2 = new LinkedList<>();
-		collectValidFiles(folder1File, validFiles1);
-		collectValidFiles(folder2File, validFiles2);
+		File goldFile = new File(goldFolder);
+		Path goldPath = goldFile.toPath();
+		File evalFile = new File(evalFolder);
+		Path evalPath = evalFile.toPath();
+		LinkedList<File> validFilesGold = new LinkedList<>();
+		LinkedList<File> validFilesEval = new LinkedList<>();
+		collectValidFiles(goldFile, validFilesGold);
+		collectValidFiles(evalFile, validFilesEval);
 
-		for (File file : validFiles1)
+		// Iterate through Gold standard files
+		for (File gfile : validFilesGold)
 		{
 		    if (verbose_output)
-			    System.out.println("Processing: " + file.getName());
-			String baseName = file.getName();
-			Path path = file.toPath();
-			Path relPath = folder1Path.relativize(path);
+			    System.out.println("Processing: " + gfile.getName());
+			String baseName = gfile.getName();
+			Path path = gfile.toPath();
+			Path relPath = goldPath.relativize(path);
 
-			// find corresponding file in folder2
-			File file2 = null;
+			// find corresponding file in evaluation folder
+			File efile = null;
 			Path path2 = null;
-			for (File validFile2 : validFiles2)
+			for (File validFile2 : validFilesEval)
 			{
 			    Path validPath2 = validFile2.toPath();
-			    Path relPath2 = folder2Path.relativize(validPath2);
+			    Path relPath2 = evalPath.relativize(validPath2);
 			    if (relPath.equals(relPath2)) {
-					file2 = validFile2;
+					efile = validFile2;
 					path2 = validPath2;
 			    }
 			}
 			
-			if (file2 != null)
+			// Compare gfile with corresponding evaluation file (efile)
+			if (efile != null)
 			{
-				validFiles2.remove(file2);
+				validFilesEval.remove(efile);
 
 				// find text files
 				String txtName = baseName.substring(0, baseName.lastIndexOf('.')) + ".txt";
@@ -134,19 +132,19 @@ public class CompareEntities
 
 				TreeMap<Integer,BackAnnotate.SpanTag> ref_map = null;
 
-				Document d1 = Annotations.read(file.getAbsolutePath(), path.toString());
-				Document d2 = Annotations.read(file2.getAbsolutePath(), path2.toString());
+				Document goldDoc = Annotations.read(gfile.getAbsolutePath(), path.toString());
+				Document evalDoc = Annotations.read(efile.getAbsolutePath(), path2.toString());
 
 				if (back_annotate.hasSource()) {
-					ref_map = BackAnnotate.makeTagMap(d2.getEntities());
+					ref_map = BackAnnotate.makeTagMap(evalDoc.getEntities());
 				}
-				for (Entity e : d1.getEntities())
+				for (Entity e : goldDoc.getEntities())
 				{
 					entityTypes.add(e.getType());
 
 					EntityMatchResult matchResult = null;
 
-					matchResult = d2.findEntity(e, mt);
+					matchResult = evalDoc.findEntity(e, mt);
 					if ( matchResult != null ) {
 
 						if ( verbose_output ) {
@@ -160,53 +158,7 @@ public class CompareEntities
 						else
 						{ entityTP.put(e.getType(), entityTP.get(e.getType()) + 1); }
 					}
-					else
-					{
-						if (entityFP.get(e.getType()) == null)
-						{ entityFP.put(e.getType(), 1); }
-						else
-						{ entityFP.put(e.getType(), entityFP.get(e.getType()) + 1);}
-
-						if (verbose_output)
-						    System.out.println("DOCUMENT:" + file.getName() + "|" + "FALSE_POSITIVE|" + e.getType() + "|" + e.locationInfo() + "|" + e.getString());
-
-						mismatches.setCell(0, back_annotate.locationInfo(e));
-						mismatches.setCell(1, "FP");
-						mismatches.setCell(2, (ref_map != null) ? back_annotate.renderContext(e,ref_map) : e.getString());
-						mismatches.nextRow();
-					}
-				}
-
-				if (back_annotate.hasSource()) {
-					ref_map = BackAnnotate.makeTagMap(d1.getEntities());
-				}
-
-				// count any entities in d2 not matched when looking through the d1 entities as FNs
-				for (Entity e : d2.getEntities())
-				{
-					entityTypes.add(e.getType());
-
-					//Entity match = null;
-					EntityMatchResult matchResult = null;
-
-					matchResult = d1.findEntity(e, mt);
-
-					/** 
-					if (mt.getSpanMatchType() == SpanMatch.EXACT)
-					{	
-						matchResult = d1.findEntity(e,mt);
-					}
-					else if (mt.getSimThreshold() < 1.0)
-					{	match = d1.findEntitySimilarString(e, mt.getSimThreshold());
-						if (match != null && verbose_output && !e.getString().equals(match.getString()))
-							System.out.println("Inexact: " + e.getString() + " ~ " + match.getString());
-					}
-					else
-					{ matchResult = d1.findEntity(e, mt); }
-					*/
-
-					// No match for d2 entity in d1
-					if (matchResult == null)
+					else // no entity matching gold entity in evaluation file -- FN
 					{
 						if (entityFN.get(e.getType()) == null)
 						{ entityFN.put(e.getType(), 1); }
@@ -214,7 +166,7 @@ public class CompareEntities
 						{ entityFN.put(e.getType(), entityFN.get(e.getType()) + 1); }
 
 						if (verbose_output)
-						    System.out.println("DOCUMENT:" + file.getName() + "|" + "FALSE_NEGATIVE|" + e.getType() + "|" + e.locationInfo() + "|" + e.getString());
+						    System.out.println("DOCUMENT:" + gfile.getName() + "|" + "FALSE_NEGATIVE|" + e.getType() + "|" + e.locationInfo() + "|" + e.getString());
 						
 						mismatches.setCell(0, back_annotate.locationInfo(e));
 						mismatches.setCell(1,"FN");
@@ -222,10 +174,42 @@ public class CompareEntities
 						mismatches.nextRow();
 					}
 				}
+
+				if (back_annotate.hasSource()) {
+					ref_map = BackAnnotate.makeTagMap(goldDoc.getEntities());
+				}
+
+				// count any entities in evaluation doc not matched when looking through the gold entities as FPs
+				for (Entity e : evalDoc.getEntities())
+				{
+					entityTypes.add(e.getType());
+
+					//Entity match = null;
+					EntityMatchResult matchResult = null;
+
+					matchResult = goldDoc.findEntity(e, mt);
+
+					// No match for entity in evaluation file in gold -- FP
+					if (matchResult == null)
+					{
+						if (entityFP.get(e.getType()) == null)
+						{ entityFP.put(e.getType(), 1); }
+						else
+						{ entityFP.put(e.getType(), entityFP.get(e.getType()) + 1);}
+
+						if (verbose_output)
+						    System.out.println("DOCUMENT:" + gfile.getName() + "|" + "FALSE_POSITIVE|" + e.getType() + "|" + e.locationInfo() + "|" + e.getString());
+
+						mismatches.setCell(0, back_annotate.locationInfo(e));
+						mismatches.setCell(1, "FP");
+						mismatches.setCell(2, (ref_map != null) ? back_annotate.renderContext(e,ref_map) : e.getString());
+						mismatches.nextRow();
+					}
+				}
 			}
 		}
 
-		if(!validFiles2.isEmpty()){
+		if(!validFilesEval.isEmpty()){
 			throw new Exception("mandatory file is missing");
 		}
 
@@ -280,10 +264,5 @@ public class CompareEntities
 		OutFormat summaryFmt = OutFormat.ofEnum(Options.common.outFmt);
 		String results = summaryFmt.produceTable(summary);
 		System.out.println("Summary:\n" + results);
-
-//	System.out.println(
-//		summaryFmt.produceTable(mismatches)+
-//		"Summary:\n"+
-//		summaryFmt.produceTable(summary));
 	}
 }

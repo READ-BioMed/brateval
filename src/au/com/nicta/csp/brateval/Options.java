@@ -30,7 +30,8 @@ import java.lang.IllegalArgumentException;
 
 	// options related to annotation folders
 	public String goldFolder; // name of folder for gold standard annotations
-	public String compFolder; // name of folder for annotations to be compared to gold standard
+	public String evalFolder; // name of folder for annotations to be compared to gold standard
+	public String configFile; // location/name of annotation.conf file (path + name) [by default, "annotation.conf" in the current directory will be used]
      
 	// options related to matching
 	public MatchType matchType; // specify how spans are treated for matching
@@ -47,7 +48,8 @@ import java.lang.IllegalArgumentException;
 		matchType = new MatchType();
 
 		goldFolder = null;
-		compFolder = null;
+		evalFolder = null;
+		configFile = "annotation.conf";
 
 		for (int j=0; j<argv.length; ++j) {
 			if (argv[j].charAt(0) == '-') {
@@ -55,6 +57,10 @@ import java.lang.IllegalArgumentException;
 					case "-of": case "-out-format":
 					    	j++;
 						outFmt = OutFmt.valueOf(toEnumName(argv[j]));
+						break;
+					case "-tc": case "-taxon-config": case "-config": // location of annotation.conf file
+						j++;
+						configFile = argv[j];
 						break;
 					case "-v": case "-verbose":
 						verbose = true;
@@ -65,7 +71,7 @@ import java.lang.IllegalArgumentException;
 						break;
 					case "-e": case "-eval": // folder to evaluate against gold data
 						j++;
-						compFolder = argv[j];
+						evalFolder = argv[j];
 						break;
 					case "-ft": case "-print-full-taxonomy":
 						show_full_taxonomy = true;
@@ -93,8 +99,8 @@ import java.lang.IllegalArgumentException;
 				}
 			} else { 
 				// assume first non "-" argument is the comparator folder, and second is the gold folder
-				if ( compFolder == null)
-					compFolder = argv[j];
+				if ( evalFolder == null)
+					evalFolder = argv[j];
 				else if ( goldFolder == null )
 					goldFolder = argv[j];
 				else av.add(argv[j]);

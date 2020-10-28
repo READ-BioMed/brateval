@@ -48,6 +48,11 @@ For instance, with both of these values set, and an overlap span plus inexact ty
 java -cp brateval.jar au.com.nicta.csp.brateval.CompareEntities -e evaluation_set_folder -g groundtruth_set_folder -ft -v -s overlap -t inexact
 
 
+By default, the BRAT annotation.conf file is expected in the directory where brateval is run. However, its location can be explitily set with the option "-tc" or "-taxon-config" or just "-config" plus the file location+name, e.g.:
+java -cp brateval.jar au.com.nicta.csp.brateval.CompareEntities -e evaluation_set_folder -g groundtruth_set_folder -config config/annotation.conf
+
+If the annotation configuration file is not found, then the tool simply infers the entity types; in that case inexact or hierarchical matching defaults to exact matching.
+
 
 Relations are evaluated using the following command:
 
