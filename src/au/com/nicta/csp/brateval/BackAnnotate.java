@@ -40,13 +40,13 @@ public class BackAnnotate {
 	}
 
 	public BackAnnotate(String f) {
-		sourcePath = Paths.get(".", f);
+		sourcePath = Paths.get(f);
 		readSource();
 	}
 
 	public BackAnnotate(String [] fs) {
 		for (String f:fs) {
-			Path p = Paths.get(".", f);
+			Path p = Paths.get(f);
 			if (Files.exists(p)) {
 				sourcePath = p;
 				readSource();
