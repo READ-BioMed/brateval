@@ -116,7 +116,7 @@ public class EntityMatchResult {
             if ( matchType.getTypeMatchType() != TypeMatch.EXACT ) { // Inexact Span + Inexact Type
                 // TODO: Work out whether the types are related (i.e., one more specific than the other) or a 'clash'
                 if ( e1.getType().compareTo(e2.getType()) > 0 ) { // order types consistently
-                    str = "DOCUMENT:" + e1.getFile() + "|" + inexactPrefix + "and-TYPE|" + e1.getType() + "|" + e1.locationInfo() + "|" + e1.getString() + " |~| " + e2.getType() + "|" + e2.locationInfo() + "|" + e2.getString();
+                    str = "DOCUMENT:" + e1.getFile() + "|" + inexactPrefix + "-and-TYPE|" + e1.getType() + "|" + e1.locationInfo() + "|" + e1.getString() + " |~| " + e2.getType() + "|" + e2.locationInfo() + "|" + e2.getString();
                 } else {
                     str = "DOCUMENT:" + e1.getFile() + "|" + inexactPrefix + "-and-TYPE|" + e2.getType() + "|" + e2.locationInfo() + "|" + e2.getString() + " |~| " + e1.getType() + "|" + e1.locationInfo() + "|" + e1.getString();
                 }

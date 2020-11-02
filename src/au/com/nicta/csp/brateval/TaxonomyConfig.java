@@ -2,6 +2,7 @@ package au.com.nicta.csp.brateval;
 import java.lang.Character;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.TreeMap;
 
 /**
  * Taxonomy Configuration
@@ -12,11 +13,13 @@ import java.util.ArrayList;
  */
  
  public class TaxonomyConfig {
-    public final int TOP_LEVEL = 0;
-    public final String TOP = "ALL";
+ 	public final int TOP_LEVEL = 0;
+	public final String TOP = "ALL";
 
 	public class EntityDesc {
 		String name;
+		int depth = 0;
+		EntityDesc parent = null;
 		EntityDesc(String s) {name = s;}
 	}
 
@@ -28,7 +31,9 @@ import java.util.ArrayList;
 	
 	HierList<EntityDesc> entities = new HierList<EntityDesc>();
 	HierList<RelationDesc> relations = new HierList<RelationDesc>();
-	
+	TreeMap<String,EntityDesc> entityByName = new TreeMap<String,EntityDesc>(String.CASE_INSENSITIVE_ORDER);
+	TreeMap<String,RelationDesc> relationByName = new TreeMap<String,RelationDesc>(String.CASE_INSENSITIVE_ORDER);
+
 	static File findConfigFile() {
 		File fn = new File("./annotation.conf");
 		if (fn.isFile() && fn.canRead()) return fn;
@@ -36,7 +41,7 @@ import java.util.ArrayList;
 		return null;
 	}
 
-    TaxonomyConfig(String confFile) {
+	TaxonomyConfig(String confFile) {
 	    File fn = new File(confFile);
 	    if (!(fn.isFile() && fn.canRead())) {
 		    fn = null;
@@ -118,9 +123,34 @@ import java.util.ArrayList;
 					reader.close();
 			} catch (IOException e) {}
 		}
+		fillDerived();
+	}
+
+	private void	fillDerived() {
+		entities.traverse(new HierList.Visitor<EntityDesc>() {
+			public void pre(int lev, EntityDesc x, EntityDesc p) {
+				entityByName.put(x.name, x);
+				System.out.println("* " + x.name + ((p!=null)? ("->"+p.name):"")) ;
+				x.depth = (p!=null)?p.depth+1:0;
+				x.parent = p;
+			}
+			public void post(int lev, EntityDesc x, EntityDesc p){}
+			});
+		relations.traverse(new HierList.Visitor<RelationDesc>() {
+			public void pre(int lev, RelationDesc x, RelationDesc p) {
+				relationByName.put(x.name, x);
+			}
+			public void post(int lev, RelationDesc x, RelationDesc p){}
+			});
 	}
 	
 	private ArrayList<String> levelIndents = new ArrayList<String>(16);
+	public EntityDesc getEntityDesc(String n) {
+		return entityByName.get(n);
+	}
+	public RelationDesc getRelationDesc(String n) {
+		return relationByName.get(n);
+	}	
 	public String levelIndent(int level) {
 		if (levelIndents.size() <= level ||
 			levelIndents.get(level) == null) {
@@ -135,7 +165,7 @@ import java.util.ArrayList;
 		return levelIndents.get(level);
 	}
      
-     public String levelPrefix(int level) {
+	public String levelPrefix(int level) {
          if (levelIndents.size() <= level ||
              levelIndents.get(level) == null) {
              StringBuffer buffer = new StringBuffer();
@@ -147,7 +177,7 @@ import java.util.ArrayList;
              levelIndents.set(level, buffer.toString());
          }
          return levelIndents.get(level);
-     }
+	}
 	
 	public void traverseEntities(HierList.Visitor<EntityDesc> v) {
 		entities.traverse(v);
@@ -155,5 +185,24 @@ import java.util.ArrayList;
 	public void traverseRelations(HierList.Visitor<RelationDesc> v) {
 		relations.traverse(v);
 	}
-}	
-			
+
+	static public EntityDesc lowestCommonSubsumer(EntityDesc e1, EntityDesc e2) {
+		while(e1!=null && e2!=null) {
+			if (e1 == e2) {
+				System.out.println("S~~ "+e1.name);
+				return e1;
+			}
+			if (e1.depth >= e2.depth) e1=e1.parent;
+			if (e2.depth >  e1.depth) e2=e2.parent;
+		}
+		return null;
+	}
+
+	public static TaxonomyConfig common = null;
+	public static TaxonomyConfig singleton() {
+		if (common==null) common = new TaxonomyConfig();
+		return common;
+	}
+
+
+}
