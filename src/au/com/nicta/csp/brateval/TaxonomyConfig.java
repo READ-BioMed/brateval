@@ -130,7 +130,7 @@ import java.util.TreeMap;
 		entities.traverse(new HierList.Visitor<EntityDesc>() {
 			public void pre(int lev, EntityDesc x, EntityDesc p) {
 				entityByName.put(x.name, x);
-				System.out.println("* " + x.name + ((p!=null)? ("->"+p.name):"")) ;
+				//System.out.println("* " + x.name + ((p!=null)? ("->"+p.name):""));
 				x.depth = (p!=null)?p.depth+1:0;
 				x.parent = p;
 			}
@@ -188,10 +188,7 @@ import java.util.TreeMap;
 
 	static public EntityDesc lowestCommonSubsumer(EntityDesc e1, EntityDesc e2) {
 		while(e1!=null && e2!=null) {
-			if (e1 == e2) {
-				System.out.println("S~~ "+e1.name);
-				return e1;
-			}
+			if (e1 == e2) return e1;
 			if (e1.depth >= e2.depth) e1=e1.parent;
 			if (e2.depth >  e1.depth) e2=e2.parent;
 		}
