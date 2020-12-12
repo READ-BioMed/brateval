@@ -32,6 +32,7 @@ public class Attribute
 
   /** @deprecated
    * Return a list composed of the target ID and (optionally) the value of the attribute */
+  @Deprecated
   public LinkedList <String> getList ()
   { return list; }
 

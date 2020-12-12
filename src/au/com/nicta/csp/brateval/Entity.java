@@ -2,6 +2,8 @@ package au.com.nicta.csp.brateval;
 
 import java.util.LinkedList;
 
+import javax.lang.model.util.ElementScanner14;
+
 import au.com.nicta.csp.brateval.MatchType.SpanMatch;
 import au.com.nicta.csp.brateval.MatchType.TypeMatch;
 
@@ -16,6 +18,7 @@ public class Entity
   private String id;
   private String type;
   private String file;
+  private TaxonomyConfig.EntityDesc typeDescription;
 
   private LinkedList <Location> l = new LinkedList <Location> ();
   
@@ -24,11 +27,13 @@ public class Entity
 
   private String string;
 
+  private static TaxonomyConfig tx = TaxonomyConfig.singleton();
   //public Entity (String id, String type, int start, int end, String string)
   public Entity (String id, String type, LinkedList <Location> l, String string, String file)
   {
 	this.id = id;
 	this.type = type;
+	typeDescription = tx.getEntityDesc(type);
 	this.l = l;
 	this.string = string;
 	this.file = file;
@@ -43,8 +48,12 @@ public class Entity
   public String getType()
   { return type; }
 
+  public TaxonomyConfig.EntityDesc getTypeDesc()
+  { return typeDescription; }
+  
   public void setType(String type)
-  { this.type = type; }
+  { this.type = type;
+	typeDescription = tx.getEntityDesc(type); }
 
   public LinkedList <Location> getLocations()
   { return l; }
@@ -164,59 +173,53 @@ public class Entity
   	return false;
   }
 
+  public static boolean entityComparisonCommonTypeHierarchy(Entity e1, Entity e2)
+  {
+	  TaxonomyConfig.EntityDesc s =
+	    tx.lowestCommonSubsumer(e1.getTypeDesc(), e2.getTypeDesc());
+	  return s != null && s.depth > 0; 
+  }
+  
   public static EntityMatchResult getMatchResult(Entity e1, Entity e2, MatchType mt)
   {
-    EntityMatchResult matchResult = new EntityMatchResult();  
+    EntityMatchResult matchResult = new EntityMatchResult();
     matchResult.setE1(e1);
     matchResult.setE2(e2);
     SpanMatch mtSpanMatch = mt.getSpanMatchType();
-
-    boolean someMatch = false;
 
     // Check for nature of span/string overlap
     // Get the most specific type of overlap (prefer EXACT)
     if ( entityComparisonExactSpan(e1, e2) ) {
       matchResult.setSpanMatchType(SpanMatch.EXACT);
-      someMatch = true;     
-    } else if ( mtSpanMatch == SpanMatch.OVERLAP ) { // look for span overlap if match type allows it
-      if ( entityComparisonSpanOverlap(e1, e2) ) {
-        matchResult.setSpanMatchType(SpanMatch.OVERLAP);
-        someMatch = true;
-      }
-    } else if ( mtSpanMatch == SpanMatch.APPROXIMATE ) { // look for approximate string match if match type allows it
-      if ( entityComparisonSpanOverlap(e1, e2) ) { // entities must overlap
-        double sim = entityComparisonStringSimilarity(e1, e2, mt.getSimThreshold() ); // entities must also be similar
-        if ( sim > 0.0 ) {
+    } else if (mtSpanMatch == SpanMatch.EXACT)
+      return null;
+    else if ( entityComparisonSpanOverlap(e1, e2) ) {
+      if ( mtSpanMatch == SpanMatch.APPROXIMATE ) { // look for approximate string match if match type allows it
+        double minSim = mt.getSimThreshold();
+        double sim = entityComparisonStringSimilarity(e1, e2, minSim ); // entities must also be similar
+        if ( sim >= minSim ) {
           matchResult.setSpanMatchType(SpanMatch.APPROXIMATE);
           matchResult.setMatchSim(sim);
-          someMatch = true;
-        }
-      }
-    }
-
-    if (someMatch) {
-      // Set type equivalence in matchResult
-      if ( entityComparisonExactType(e1, e2) ) {
-        matchResult.setTypeMatchType(TypeMatch.EXACT);
+        } else
+          return null;
       } else {
-        matchResult.setTypeMatchType(TypeMatch.INEXACT);
+        matchResult.setSpanMatchType(SpanMatch.OVERLAP);
       }
-
-      // Check mt parameters to make sure the match type constraints are satisfied
-      switch (mt.getTypeMatchType()) {
-        case EXACT:
-          if ( matchResult.getTypeMatchType() == TypeMatch.EXACT )
-            return matchResult;
-          else // TypeMatch is not exact but needs to be
-            return null;
-        case INEXACT:
-        case HIERARCHICAL:
-          return matchResult;
-      }
-
     }
+    else return null;
 
-    return null;
+    // Set type equivalence in matchResult
+    if ( entityComparisonExactType(e1, e2) )
+      matchResult.setTypeMatchType(TypeMatch.EXACT);
+    else if (mt.getTypeMatchType() == TypeMatch.EXACT)
+      return null;
+    else if ( entityComparisonCommonTypeHierarchy(e1, e2) )
+      matchResult.setTypeMatchType(TypeMatch.HIERARCHICAL);
+    else if (mt.getTypeMatchType() == TypeMatch.HIERARCHICAL)
+      return null;
+    else  matchResult.setTypeMatchType(TypeMatch.INEXACT);
+
+    return matchResult;
   }
   
   public String locationInfo()
