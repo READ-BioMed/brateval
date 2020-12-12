@@ -10,24 +10,9 @@ public class EntityMatchResult {
     private MatchType matchType;
     private double matchSim;
 
-    public MatchType getMatchType() {
-        return this.matchType;
-    }
-
-    public void setMatchType(MatchType matchType) {
-        this.matchType = matchType;
-    }
-
-    public double getMatchSim() {
-        return this.matchSim;
-    }
-
-    public void setMatchSim(double matchSim) {
-        this.matchSim = matchSim;
-    }
-
     private Entity e1;
     private Entity e2;
+
 
     public EntityMatchResult() {
         matchType = new MatchType();
@@ -102,6 +87,22 @@ public class EntityMatchResult {
         this.e2 = e2;
     }
 
+    public MatchType getMatchType() {
+        return this.matchType;
+    }
+
+    public void setMatchType(MatchType matchType) {
+        this.matchType = matchType;
+    }
+
+    public double getMatchSim() {
+        return this.matchSim;
+    }
+
+    public void setMatchSim(double matchSim) {
+        this.matchSim = matchSim;
+    }
+    
     /**
      * Summarises EntityMatchResult in a string.
      * Only prints details for non-Exact matches, otherwise null is returned.

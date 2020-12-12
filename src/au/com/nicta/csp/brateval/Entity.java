@@ -2,8 +2,6 @@ package au.com.nicta.csp.brateval;
 
 import java.util.LinkedList;
 
-import javax.lang.model.util.ElementScanner14;
-
 import au.com.nicta.csp.brateval.MatchType.SpanMatch;
 import au.com.nicta.csp.brateval.MatchType.TypeMatch;
 
@@ -168,7 +166,7 @@ public class Entity
 
   public static EntityMatchResult getMatchResult(Entity e1, Entity e2, MatchType mt)
   {
-    EntityMatchResult matchResult = new EntityMatchResult();
+    EntityMatchResult matchResult = new EntityMatchResult();  
     matchResult.setE1(e1);
     matchResult.setE2(e2);
     SpanMatch mtSpanMatch = mt.getSpanMatchType();

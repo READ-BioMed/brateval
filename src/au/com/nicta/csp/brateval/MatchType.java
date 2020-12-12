@@ -4,14 +4,14 @@ public class MatchType {
 
     public enum SpanMatch {
 		EXACT, // exact boundary match
-		OVERLAP, // relaxed boundary match
-		APPROXIMATE // relaxed boundary match, thresholded by edit-distance similarity
+		APPROXIMATE, // relaxed boundary match, thresholded by edit-distance similarity
+		OVERLAP // relaxed boundary match
 	}
 
  	public enum TypeMatch {
 		EXACT, // exact type match
-		INEXACT, // types differ
-		HIERARCHICAL // types are in a hierarchical relationship
+		HIERARCHICAL, // types are in a hierarchical relationship (currently not handled; collapses to INEXACT)
+		INEXACT // types differ
     }
     
     private SpanMatch spanMatchType;
@@ -84,5 +84,31 @@ public class MatchType {
 
 		return str;
 	}
+
+
+	public static MatchType merge(MatchType mta, MatchType mtb) {
+		MatchType newMt = new MatchType();
+		int compType = mta.getTypeMatchType().compareTo(mtb.getTypeMatchType());
+		int compSpan = mta.getSpanMatchType().compareTo(mtb.getSpanMatchType());
+		
+		// Want the most permissive (highest) value to be used in result
+		if (compType == 0) { // equal
+			newMt.setTypeMatchType(mta.getTypeMatchType());
+		} else if (compType < 0 ) { // b higher than a
+			newMt.setTypeMatchType(mtb.getTypeMatchType());
+		} else if (compType > 0) { // a higher than b
+			newMt.setTypeMatchType(mta.getTypeMatchType());
+		}
+
+		if (compSpan == 0) { // equal
+			newMt.setSpanMatchType(mta.getSpanMatchType());
+		} else if (compSpan < 0 ) { // b higher than a
+			newMt.setSpanMatchType(mtb.getSpanMatchType());
+		} else if (compSpan > 0) { // a higher than b
+			newMt.setSpanMatchType(mta.getSpanMatchType());
+		}
+
+		return newMt;
+	} 
 
 }

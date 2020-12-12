@@ -89,7 +89,9 @@ import java.util.ArrayList;
 
 			while (text != null) {
 			  String tt = text.trim();
-			  if (tt.equals("[entities]"))
+			  if (tt == null || tt.isEmpty())
+			  	text = reader.readLine();
+			  else if (tt.equals("[entities]"))
 			  	text = consumeSection(reader, new EntryAdder() {
 				  	public void add(int l, String s)
 			  		{

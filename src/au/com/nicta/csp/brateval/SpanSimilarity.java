@@ -1,7 +1,6 @@
 package au.com.nicta.csp.brateval;
 
 import java.lang.Math;
-import java.util.Arrays;
 
 public class SpanSimilarity {
 	static int costOfSubstitution(char x, char y) {

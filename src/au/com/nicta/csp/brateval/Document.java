@@ -187,65 +187,35 @@ public class Document
 
 	return rc;
   }
-  /**
+
+    /**
    * Find relation in a given document
    * 
    * @param relation
    * @param d
    * @return Return the relation in the matching document or null if no relation can be found
    */
-  public Relation findRelationOverlap(Relation relation)
+  public RelationMatchResult findRelation(Relation relation, MatchType mt)
   {
     for (Relation rd : getRelations())
     {
       // Compare relation type
-      if (relation.getRelationType().equals(rd.getRelationType())
-      && (    		 
-          Entity.entityComparisonOverlap(relation.getEntity1(), rd.getEntity1())
-      &&  Entity.entityComparisonOverlap(relation.getEntity2(), rd.getEntity2())
-    	 )
-      )
+      if (relation.getRelationType().equals(rd.getRelationType()))
       {
-        // Compare entities
-        return rd;
+        // Compare entities 		 
+        EntityMatchResult entr1 = Entity.getMatchResult(relation.getEntity1(), rd.getEntity1(), mt);
+        EntityMatchResult entr2 = Entity.getMatchResult(relation.getEntity2(), rd.getEntity2(), mt);
+
+        if (entr1 != null && entr2 != null ) {
+          RelationMatchResult result = new RelationMatchResult(rd, entr1, entr2);
+          return result;
+        }
       }
     }
 
 	return null;
   }
 
-  /**
-   * Find relation in a given document
-   * 
-   * @param relation
-   * @param d
-   * @return Return the relation in the matching document or null if no relation can be found
-   */
-  public Relation findRelation(Relation relation)
-  {
-    for (Relation rd : getRelations())
-    {
-      // Compare relation type
-      if (relation.getRelationType().equals(rd.getRelationType())
-      && ((
-          Entity.entityComparisonExact(relation.getEntity1(), rd.getEntity1())
-      &&  Entity.entityComparisonExact(relation.getEntity2(), rd.getEntity2())
-    	 )
-      // Order does not matter
-      || (
-           Entity.entityComparisonExact(relation.getEntity1(), rd.getEntity2())
-       &&  Entity.entityComparisonExact(relation.getEntity2(), rd.getEntity1())
-       	 )
-      )
-      )
-      {
-        // Compare entities
-        return rd;
-      }
-    }
-
-	return null;  
-  }
 
   // Look for entity relation
   public boolean hasEntityRelation(Entity e)

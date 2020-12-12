@@ -14,19 +14,24 @@ import java.util.*;
  */
 public class CompareRelations
 {
+    static  boolean verbose_output;
     static  boolean show_full_taxonomy = false;
     static  TaxonomyConfig taxonomy = new TaxonomyConfig();
 
-    public static void main (String argc []) throws IOException
-    {
-        String folder1 = argc[0];
-        String folder2 = argc[1];
-        boolean exact_match = Boolean.parseBoolean(argc[2]);
-        boolean verbose = Boolean.parseBoolean(argc[3]);
+	public static void main (String argc []) throws Exception
+	{
+		Options.common = new Options(argc);
+		verbose_output = Options.common.verbose;
+		taxonomy = new TaxonomyConfig(Options.common.configFile);
+		show_full_taxonomy = Options.common.show_full_taxonomy;
+		
+		String evalFolder = Options.common.evalFolder;
+		String goldFolder = Options.common.goldFolder;
 
-        evaluate(folder1, folder2, exact_match, verbose);
+		System.out.println("Evaluating Folder: " + evalFolder + " against Gold Folder: " + goldFolder + " Match settings : " + Options.common.matchType.toString() );
+		evaluate(goldFolder, evalFolder, Options.common.matchType);
     }
-
+    
     static void report(int level, String rt, int TP, int FP, int FN, int MFP, int MFN) {
         double precision = 0;
         double recall = 0;
@@ -68,7 +73,9 @@ public class CompareRelations
         double finalF_measure = f_measure;
         Map<String,Object> map = new HashMap<String, Object>()
         {
-            {
+			private static final long serialVersionUID = 1680940560190051518L;
+
+			{
                 put("rt", rt);
                 put("tp", (double) TP);
                 put("fp", (double) FP);
@@ -84,9 +91,14 @@ public class CompareRelations
         return map;
     }
 
-    public static void evaluate(String folder1, String folder2, boolean exact_match, boolean verbose)
+    public static void evaluate(String goldFolderPath, String evalFolderPath, MatchType mt)
             throws IOException
     {
+        if ( goldFolderPath == null || evalFolderPath == null) {
+            System.out.println("Missing folder for evaluation. Aborting.");
+            return;
+        }
+
         Set <String> relationTypes = new TreeSet <String> ();
 
         Map <String, Integer> relationTP = new HashMap <String, Integer> ();
@@ -96,60 +108,55 @@ public class CompareRelations
         Map <String, Integer> relationMissingFP = new HashMap <String, Integer> ();
         Map <String, Integer> relationMissingFN = new HashMap <String, Integer> ();
 
-        File folder = new File(folder1);
-        File[] validFiles = new File(folder2).listFiles();
-        LinkedList<String> validFileNames = new LinkedList<>();
-        for (File file: validFiles){
-            if (file.getName().endsWith(".ann")) {
-                validFileNames.add(file.getName());
+        File goldFolder = new File(goldFolderPath);
+        File[] evalFiles = new File(evalFolderPath).listFiles();
+        LinkedList<String> evalFileNames = new LinkedList<>();
+        for (File evalFile: evalFiles){
+            if (evalFile.getName().endsWith(".ann")) {
+                evalFileNames.add(evalFile.getName());
             }
         }
-        for (File file : folder.listFiles())
+        for (File goldFile : goldFolder.listFiles())
         {
-            String baseName = file.getName();
-            if (file.getName().endsWith(".ann") && validFileNames.contains(baseName))
+            String baseName = goldFile.getName();
+            if (goldFile.getName().endsWith(".ann") && evalFileNames.contains(baseName))
             {
-                validFileNames.remove(baseName);
+                evalFileNames.remove(baseName);
                 Map <String, RelationComparison> relations = new TreeMap <String, RelationComparison> ();
 
-                Document d1 = Annotations.read(file.getAbsolutePath(),
-                        Paths.get(folder1, file.getName()).toString());
-                Document d2 = Annotations.read(folder2 + File.separator +  file.getName(),
-                        Paths.get(folder1, file.getName()).toString());
+                Document goldDoc = Annotations.read(goldFile.getAbsolutePath(),
+                        Paths.get(goldFolderPath, goldFile.getName()).toString());
+                Document evalDoc = Annotations.read(evalFolderPath + File.separator +  goldFile.getName(),
+                        Paths.get(goldFolderPath, goldFile.getName()).toString());
 
-                // TPs and FPs
-                for (Relation rel : d1.getRelations())
+                // TPs and FNs
+                for (Relation rel : goldDoc.getRelations())
                 {
                     if (relations.get(rel.getRelationType()) == null)
                     { relations.put(rel.getRelationType(), new RelationComparison()); }
 
-                    if  (exact_match)
-                    {
-                        if (d2.findRelation(rel) != null)
-                        { relations.get(rel.getRelationType()).addTP(rel); }
-                        else
-                        { relations.get(rel.getRelationType()).addFP(rel); }
+                    RelationMatchResult result = evalDoc.findRelation(rel, mt);
+                    if (result != null) {
+                        relations.get(rel.getRelationType()).addTP(rel);
+                    } else {
+                        // didn't find matching relation in evalDoc -- FN
+                        relations.get(rel.getRelationType()).addFN(rel);
                     }
-                    else
-                    {
-                        if (d2.findRelationOverlap(rel) != null)
-                        { relations.get(rel.getRelationType()).addTP(rel); }
-                        else
-                        { relations.get(rel.getRelationType()).addFP(rel); }
-                    }
+
                 }
 
-                // FNs
-                for (Relation rel : d2.getRelations())
+                // FPs
+                for (Relation rel : evalDoc.getRelations())
                 {
-                    if (relations.get(rel.getRelationType()) == null)
-                    { relations.put(rel.getRelationType(), new RelationComparison()); }
-                    if (exact_match){
-                        if (d1.findRelation(rel) == null){
-                            relations.get(rel.getRelationType()).addFN(rel);
-                        }
-                    }else if (d1.findRelationOverlap(rel) == null)
-                    { relations.get(rel.getRelationType()).addFN(rel);}
+                    if (relations.get(rel.getRelationType()) == null) {
+                        relations.put(rel.getRelationType(), new RelationComparison());
+                    }
+
+                    RelationMatchResult result = goldDoc.findRelation(rel, mt);
+                    if (result == null) {
+                        // relation exists in evalDoc that doesn't exist in gold doc -- FP
+                        relations.get(rel.getRelationType()).addFP(rel);
+                    }
                 }
 
                 for (Map.Entry <String, RelationComparison> entry : relations.entrySet())
@@ -158,9 +165,9 @@ public class CompareRelations
 
                     for (Relation rel : entry.getValue().getTP())
                     {
-                        if (verbose)
+                        if (verbose_output)
                         {
-                            System.out.println(file.getName());
+                            System.out.println(goldFile.getName());
                             System.out.println("TP " + rel.getRelationType());
                             System.out.println(rel.getEntity1());
                             System.out.println(rel.getEntity2());
@@ -170,68 +177,56 @@ public class CompareRelations
 
                     for (Relation rel : entry.getValue().getFN())
                     {
-                        if (verbose)
+                        if (verbose_output)
                         {
-                            System.out.println(file.getName());
+                            System.out.println(goldFile.getName());
                             System.out.println("FN " + rel.getRelationType());
                             System.out.println(rel.getEntity1());
                             System.out.println(rel.getEntity2());
                             System.out.println("------");
                         }
 
-                        if (exact_match)
-                        {
-                            if (!(d1.findEntity(rel.getEntity1()) != null && d1.findEntity(rel.getEntity2()) != null))
-                            {
-                                if (relationMissingFN.get(rel.getRelationType()) == null)
-                                { relationMissingFN.put(rel.getRelationType(), 1); }
-                                else
-                                { relationMissingFN.put(rel.getRelationType(), relationMissingFN.get(rel.getRelationType()) + 1); }
+                        EntityMatchResult matchResult1, matchResult2 = null;
+                        matchResult1 = goldDoc.findEntity(rel.getEntity1(), mt);
+                        matchResult2 = goldDoc.findEntity(rel.getEntity2(), mt);
+
+
+                        if (!(matchResult1 != null && matchResult2 != null)) {
+                            if (relationMissingFN.get(rel.getRelationType()) == null) {
+                                relationMissingFN.put(rel.getRelationType(), 1);
+                            } else {
+                                relationMissingFN.put(rel.getRelationType(),
+                                        relationMissingFN.get(rel.getRelationType()) + 1);
                             }
                         }
-                        else
-                        {
-                            if (!(d1.findEntityOverlap(rel.getEntity1()) != null && d1.findEntityOverlap(rel.getEntity2()) != null))
-                            {
-                                if (relationMissingFN.get(rel.getRelationType()) == null)
-                                { relationMissingFN.put(rel.getRelationType(), 1); }
-                                else
-                                { relationMissingFN.put(rel.getRelationType(), relationMissingFN.get(rel.getRelationType()) + 1); }
-                            }
-                        }
+
                     }
 
                     for (Relation rel : entry.getValue().getFP())
                     {
-                        if (verbose)
+                        if (verbose_output)
                         {
-                            System.out.println(file.getName());
+                            System.out.println(goldFile.getName());
                             System.out.println("FP " + rel.getRelationType());
                             System.out.println(rel.getEntity1());
                             System.out.println(rel.getEntity2());
                             System.out.println("------");
                         }
 
-                        if (exact_match)
-                        {
-                            if (!(d2.findEntity(rel.getEntity1()) != null && d2.findEntity(rel.getEntity2()) != null))
-                            {
-                                if (relationMissingFP.get(rel.getRelationType()) == null)
-                                { relationMissingFP.put(rel.getRelationType(), 1); }
-                                else
-                                { relationMissingFP.put(rel.getRelationType(), relationMissingFP.get(rel.getRelationType()) + 1); }
+                        EntityMatchResult matchResult1, matchResult2 = null;
+                        matchResult1 = goldDoc.findEntity(rel.getEntity1(), mt);
+                        matchResult2 = goldDoc.findEntity(rel.getEntity2(), mt);
+
+
+                        if (!(matchResult1 != null && matchResult2 != null)) {
+                            if (relationMissingFP.get(rel.getRelationType()) == null) {
+                                relationMissingFP.put(rel.getRelationType(), 1);
+                            } else {
+                                relationMissingFP.put(rel.getRelationType(),
+                                        relationMissingFP.get(rel.getRelationType()) + 1);
                             }
                         }
-                        else
-                        {
-                            if (!(d2.findEntityOverlap(rel.getEntity1()) != null && d2.findEntityOverlap(rel.getEntity2()) != null))
-                            {
-                                if (relationMissingFP.get(rel.getRelationType()) == null)
-                                { relationMissingFP.put(rel.getRelationType(), 1); }
-                                else
-                                { relationMissingFP.put(rel.getRelationType(), relationMissingFP.get(rel.getRelationType()) + 1); }
-                            }
-                        }
+
                     }
 
                     // Overall counting
@@ -252,7 +247,7 @@ public class CompareRelations
                 }
             }
         }
-        if(!validFileNames.isEmpty()){
+        if(!evalFileNames.isEmpty()){
             throw new java.lang.Error("mandantory file is missing");
         }
 
