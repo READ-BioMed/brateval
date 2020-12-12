@@ -2,8 +2,6 @@ package au.com.nicta.csp.brateval;
 
 import java.util.LinkedList;
 
-import javax.lang.model.util.ElementScanner14;
-
 import au.com.nicta.csp.brateval.MatchType.SpanMatch;
 import au.com.nicta.csp.brateval.MatchType.TypeMatch;
 
@@ -33,7 +31,7 @@ public class Entity
   {
 	this.id = id;
 	this.type = type;
-	typeDescription = tx.getEntityDesc(type);
+	this.typeDescription = tx.getEntityDesc(type);
 	this.l = l;
 	this.string = string;
 	this.file = file;

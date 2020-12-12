@@ -109,27 +109,36 @@ public class EntityMatchResult {
      */
     public String toString() {
         String str = null;
+        String spanPrefix = "Exact";
+        String typePrefix = "Exact";
 
         if ( matchType.getSpanMatchType() != SpanMatch.EXACT ) { // Inexact Span
-            String inexactPrefix = "Inexact-Span";
+            spanPrefix = "Inexact";
             if ( matchType.getSpanMatchType().equals(SpanMatch.APPROXIMATE) )
-                inexactPrefix = "Approx-Span";
+                spanPrefix = "Approx";
             if ( matchType.getTypeMatchType() != TypeMatch.EXACT ) { // Inexact Span + Inexact Type
-                // TODO: Work out whether the types are related (i.e., one more specific than the other) or a 'clash'
+                typePrefix = "Inexact";
+                if ( matchType.getTypeMatchType().equals(TypeMatch.HIERARCHICAL) )
+                    typePrefix = "Hierarchical";
+
                 if ( e1.getType().compareTo(e2.getType()) > 0 ) { // order types consistently
-                    str = "DOCUMENT:" + e1.getFile() + "|" + inexactPrefix + "-and-TYPE|" + e1.getType() + "|" + e1.locationInfo() + "|" + e1.getString() + " |~| " + e2.getType() + "|" + e2.locationInfo() + "|" + e2.getString();
+                    str = "DOCUMENT:" + e1.getFile() + "|" + spanPrefix + "-SPAN" + "-and-" + typePrefix + "-TYPE|" + e1.getType() + "|" + e1.locationInfo() + "|" + e1.getString() + " |~| " + e2.getType() + "|" + e2.locationInfo() + "|" + e2.getString();
                 } else {
-                    str = "DOCUMENT:" + e1.getFile() + "|" + inexactPrefix + "-and-TYPE|" + e2.getType() + "|" + e2.locationInfo() + "|" + e2.getString() + " |~| " + e1.getType() + "|" + e1.locationInfo() + "|" + e1.getString();
+                    str = "DOCUMENT:" + e1.getFile() + "|" + spanPrefix + "-SPAN" + "-and-" + typePrefix + "-TYPE|" + e2.getType() + "|" + e2.locationInfo() + "|" + e2.getString() + " |~| " + e1.getType() + "|" + e1.locationInfo() + "|" + e1.getString();
                 }
             } else { // inexact Span + exact Type
-                str = "DOCUMENT:" + e1.getFile() + "|" + inexactPrefix + "|" + e1.getType() + "|" + e1.locationInfo() + "|" + e1.getString() + " |~| " + e2.getType() + "|" + e2.locationInfo() + "|" + e2.getString();
+                str = "DOCUMENT:" + e1.getFile() + "|" + spanPrefix + "-SPAN" + "|" + e1.getType() + "|" + e1.locationInfo() + "|" + e1.getString() + " |~| " + e2.getType() + "|" + e2.locationInfo() + "|" + e2.getString();
             }
         } else { // exact Span
             if ( matchType.getTypeMatchType() != TypeMatch.EXACT ) { // inexact Type
+                typePrefix = "Inexact";
+                if ( matchType.getTypeMatchType().equals(TypeMatch.HIERARCHICAL) )
+                    typePrefix = "Hierarchical";
+
                 if ( e1.getType().compareTo(e2.getType()) > 0 ) {
-                    str = "DOCUMENT:" + e1.getFile() + "|" + "Inexact-TYPE|" + e1.getType() + "|" + e1.locationInfo() + "|" + e1.getString() + " |~| " +e2.getType() + "|" + e2.locationInfo() + "|" + e2.getString();
+                    str = "DOCUMENT:" + e1.getFile() + "|" + typePrefix + "-TYPE|" + e1.getType() + "|" + e1.locationInfo() + "|" + e1.getString() + " |~| " +e2.getType() + "|" + e2.locationInfo() + "|" + e2.getString();
                 } else {
-                    str ="DOCUMENT:" + e2.getFile() + "|" + "Inexact-TYPE|" + e2.getType() + "|" + e2.locationInfo() + "|" + e2.getString() + " |~| " + e1.getType() + "|" + e1.locationInfo() + "|" + e1.getString();
+                    str ="DOCUMENT:" + e2.getFile() + "|" + typePrefix + "-TYPE|" + e2.getType() + "|" + e2.locationInfo() + "|" + e2.getString() + " |~| " + e1.getType() + "|" + e1.locationInfo() + "|" + e1.getString();
                 }
             }
         }	

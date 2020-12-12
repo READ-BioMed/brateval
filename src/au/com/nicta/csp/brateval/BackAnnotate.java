@@ -108,9 +108,7 @@ public class BackAnnotate {
 	void renderSpan(List<Object> dst, int start, int end, Collection<SpanTag> tags)
 	{
 		byte t = 0;
-		boolean focus = false;
-		boolean reference = false;
-		for (SpanTag tag:tags) {
+		for (SpanTag tag : tags) {
 			if (tag.entity==null) return; //Muted
 			if (!tag.side) t |= OutFormat.FocusEntity1;
 			else t |= OutFormat.OtherEntity; //To be extended
@@ -127,7 +125,6 @@ public class BackAnnotate {
 				HashSet<SpanTag> spanTags = new HashSet<SpanTag>(32);
 				int start = es.iterator().next().getKey();
 				for (Map.Entry<Integer,SpanTag> e: es) {
-					SpanTag s = e.getValue();
 					if (e.getValue().start < start) spanTags.add(e.getValue());
 				}
 
@@ -206,8 +203,8 @@ public class BackAnnotate {
 				spans.tailMap(firstGap.getEnd())
 				.headMap(lastGap.getStart())
 			);
-		int start = -1;
-		for (Location l: locs) {
+			
+		for (Location l : locs) {
 			addSpanTag(m, l.getStart(), l.getEnd(), false, e);
 		}
 		for (Location g: interleave_sorted) {

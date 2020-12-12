@@ -25,7 +25,7 @@ public class CompareEntities
 	{
 		Options.common = new Options(argc);
 		verbose_output = Options.common.verbose;
-		taxonomy = new TaxonomyConfig(Options.common.configFile);
+		taxonomy.readConfigFile(Options.common.configFile);
 		show_full_taxonomy = Options.common.show_full_taxonomy;
 		
 		String evalFolder = Options.common.evalFolder;

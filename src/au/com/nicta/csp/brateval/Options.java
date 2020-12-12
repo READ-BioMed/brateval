@@ -84,8 +84,13 @@ import java.lang.IllegalArgumentException;
 						    j++; // also get similarity value
 							double sim = Double.parseDouble(argv[j]);
 							matchType.setSimThreshold(sim);
-						}
-						matchType.setSpanMatchType(SpanMatch.valueOf(toEnumName(spanSelection)));
+							matchType.setSpanMatchType(SpanMatch.APPROXIMATE);
+						} else if (spanSelection.equalsIgnoreCase("overlap") || spanSelection.equalsIgnoreCase("inexact") || spanSelection.equalsIgnoreCase("o") || spanSelection.equalsIgnoreCase("i"))
+							matchType.setSpanMatchType(SpanMatch.OVERLAP); 
+						else if (spanSelection.equalsIgnoreCase("exact") || spanSelection.equalsIgnoreCase("e"))
+							matchType.setSpanMatchType(SpanMatch.EXACT);
+						else // unrecognised argument, default to EXACT
+							matchType.setSpanMatchType(SpanMatch.EXACT);
 						break;
 					case "-t": case "-type-match":
 					    j++;

@@ -34,25 +34,12 @@ import java.util.TreeMap;
 	TreeMap<String,EntityDesc> entityByName = new TreeMap<String,EntityDesc>(String.CASE_INSENSITIVE_ORDER);
 	TreeMap<String,RelationDesc> relationByName = new TreeMap<String,RelationDesc>(String.CASE_INSENSITIVE_ORDER);
 
-	static File findConfigFile() {
-		File fn = new File("./annotation.conf");
-		if (fn.isFile() && fn.canRead()) return fn;
-		System.out.println("Annotation taxonomy ignored. No file 'annotation.conf' found in current directory " + System.getProperty("user.dir"));
-		return null;
-	}
-
 	TaxonomyConfig(String confFile) {
-	    File fn = new File(confFile);
-	    if (!(fn.isFile() && fn.canRead())) {
-		    fn = null;
-		    System.out.println("Annotation taxonomy ignored. No file " + confFile + " found.");
-		}
-
-	    readConfigFile(fn);
+		readConfigFile(confFile);
 	}  
 
 	TaxonomyConfig() {
-		readConfigFile(findConfigFile());
+		//readConfigFile(findConfigFile());
 	}
 	
 	private interface EntryAdder {
@@ -85,8 +72,25 @@ import java.util.TreeMap;
 		return text; //null
 	}
 	
+	static File findConfigFile() {
+		File fn = new File("./annotation.conf");
+		if (fn.isFile() && fn.canRead()) return fn;
+		System.out.println("Annotation taxonomy ignored. No file 'annotation.conf' found in current directory " + System.getProperty("user.dir"));
+		return null;
+	}
+
+	void readConfigFile(String confFile) {
+	    File fn = new File(confFile);
+	    if (!(fn.isFile() && fn.canRead())) {
+		    fn = null;
+		    System.out.println("Annotation taxonomy ignored. No file " + confFile + " found.");
+		}
+
+	    readConfigFile(fn);
+	}
 	void readConfigFile(File file) {
 		if (file == null)	return;
+		System.out.println("Loading configuration from " + file.getAbsolutePath());
 		BufferedReader reader = null;
 		try {
 			reader = new BufferedReader(new FileReader(file));

@@ -16,7 +16,7 @@ public class CompareRelations
 {
     static  boolean verbose_output;
     static  boolean show_full_taxonomy = false;
-    static  TaxonomyConfig taxonomy = new TaxonomyConfig();
+	static  TaxonomyConfig taxonomy = TaxonomyConfig.singleton();
 
 	public static void main (String argc []) throws Exception
 	{
