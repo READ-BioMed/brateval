@@ -65,30 +65,40 @@ public class Annotations
         else if (line.startsWith("R"))
         {
           String [] fields = line.trim().split(" ");
-          String [] subfields = fields[0].split("\t");
+          if (fields.length == 3) {
+            String[] subfields = fields[0].split("\t");
 
-          String [] arg1 = fields[1].split(":");
-          //System.out.println(arg1[0] + "|" + arg1[1] + "|" + d.getEntity(arg1[1]));
+            String[] arg1 = fields[1].split(":");
+            // System.out.println(arg1[0] + "|" + arg1[1] + "|" + d.getEntity(arg1[1]));
 
-          String [] arg2 = fields[2].split(":");
-          //System.out.println(arg2[0] + "|" + arg2[1] + "|" + d.getEntity(arg2[1]));
+            String[] arg2 = fields[2].split(":");
+            // System.out.println(arg2[0] + "|" + arg2[1] + "|" + d.getEntity(arg2[1]));
 
-          //d.addRelation(subfields[0], new Relation(subfields[0], subfields[1], arg1[0], d.getEntity(fields[1].split(":")[1]), arg2[0], d.getEntity(fields[2].split(":")[1]), file));
-          d.addRelation(subfields[0], new Relation(subfields[0], subfields[1], arg1[0], arg1[1], arg2[0], arg2[1], file));
+            // d.addRelation(subfields[0], new Relation(subfields[0], subfields[1], arg1[0],
+            // d.getEntity(fields[1].split(":")[1]), arg2[0],
+            // d.getEntity(fields[2].split(":")[1]), file));
+            d.addRelation(subfields[0],
+                new Relation(subfields[0], subfields[1], arg1[0], arg1[1], arg2[0], arg2[1], file));
+          }
         }
         else if (line.startsWith("E"))
         {
           String [] fields = line.trim().split("\t");
-          String id = fields[0];
-          String [] subfields = fields[1].split(" ");
-          String [] trigger = subfields[0].split(":");
+          if (fields.length > 1) {
+            String id = fields[0];
+            String[] subfields = fields[1].split(" ");
+            String[] trigger = subfields[0].split(":");
 
-          LinkedList <String> arguments = new LinkedList <String> ();
+            LinkedList<String> arguments = new LinkedList<String>();
 
-          for (int i = 1; i < subfields.length; i++)
-          { if (subfields[i].trim().length() > 0) { arguments.add(subfields[i]); } }
+            for (int i = 1; i < subfields.length; i++) {
+              if (subfields[i].trim().length() > 0) {
+                arguments.add(subfields[i]);
+              }
+            }
 
-          d.addEvent(id, new Event(id, trigger[0], trigger[1], arguments, file));
+            d.addEvent(id, new Event(id, trigger[0], trigger[1], arguments, file));
+          }
         }
         else if (line.startsWith("*"))
         {
@@ -109,37 +119,42 @@ public class Annotations
         else if (line.startsWith("A") || line.startsWith("M"))
         {
           String [] fields = line.trim().split("\t");
-          String id = fields[0];
-          String [] subfields = fields[1].split(" ");
+          if (fields.length > 1) {
+            String id = fields[0];
+            String[] subfields = fields[1].split(" ");
 
-          LinkedList <String> attributes = new LinkedList <String> ();
+            LinkedList<String> attributes = new LinkedList<String>();
 
-          for (int i = 1; i < subfields.length; i++)
-          { attributes.add(subfields[i]); }
+            for (int i = 1; i < subfields.length; i++) {
+              attributes.add(subfields[i]);
+            }
 
-          d.addAttribute(id, new Attribute(id, subfields[0], attributes, file));
+            d.addAttribute(id, new Attribute(id, subfields[0], attributes, file));
+          }
         }
         else if (line.startsWith("N"))
         {
           String [] fields = line.trim().split("\t");
+          if (fields.length == 3) {
+            String id = fields[0];
+            String string = fields[2];
 
-          String id = fields[0];
-          String string = fields[2];
+            String[] subfields = fields[1].split(" ");
 
-          String [] subfields = fields[1].split(" ");
-
-          d.addNormalization(id, new Normalization(id, subfields[0], subfields[1], subfields[2], string, file));
+            d.addNormalization(id, new Normalization(id, subfields[0], subfields[1], subfields[2], string, file));
+          }
         }
         else if (line.startsWith("#"))
         {
           String [] fields = line.trim().split("\t");
+          if (fields.length == 3) {
+            String id = fields[0];
+            String string = fields[2];
 
-          String id = fields[0];
-          String string = fields[2];
+            String[] subfields = fields[1].split(" ");
 
-          String [] subfields = fields[1].split(" ");
-
-          d.addNote(id, new Note(id, subfields[0], subfields[1], string, file));
+            d.addNote(id, new Note(id, subfields[0], subfields[1], string, file));
+          }
         }
       }
     }
