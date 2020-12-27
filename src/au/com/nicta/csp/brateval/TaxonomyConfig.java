@@ -97,24 +97,28 @@ import java.util.TreeMap;
 			String text = reader.readLine();
 
 			while (text != null) {
-			  String tt = text.trim();
-			  if (tt.equals("[entities]"))
-			  	text = consumeSection(reader, new EntryAdder() {
-				  	public void add(int l, String s)
-			  		{
-				  		entities.add(l, new EntityDesc(s));
-			  		}});
-			  else if (tt.equals("[relations]"))
-			  	text = consumeSection(reader, new EntryAdder() {
-				  	public void add(int l, String s)
-			  		{
-				  		relations.add(l, new RelationDesc(s));
-			  		}});
-		  	  else if (tt.charAt(0) == '[')
-			  	text = consumeSection(reader, new EntryAdder() {
-				  	public void add(int l, String s) {} });
-			  else
-				text = reader.readLine();
+				String tt = text.trim();
+				if (tt == null || tt.isEmpty())
+					text = reader.readLine();
+				else if (tt.equals("[entities]"))
+					text = consumeSection(reader, new EntryAdder() {
+						public void add(int l, String s) {
+							entities.add(l, new EntityDesc(s));
+						}
+					});
+				else if (tt.equals("[relations]"))
+					text = consumeSection(reader, new EntryAdder() {
+						public void add(int l, String s) {
+							relations.add(l, new RelationDesc(s));
+						}
+					});
+				else if (tt.charAt(0) == '[')
+					text = consumeSection(reader, new EntryAdder() {
+						public void add(int l, String s) {
+						}
+					});
+				else
+					text = reader.readLine();
 			}
 
 		} catch (FileNotFoundException e) {
