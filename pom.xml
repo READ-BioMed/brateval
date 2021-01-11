@@ -8,7 +8,6 @@
   <name>BRATEval</name>
   <description>Pairwise evaluation software for annotations in BRAT stand-off format.</description>
   <build>
-    <sourceDirectory>src</sourceDirectory>
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
