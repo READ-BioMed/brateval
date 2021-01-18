@@ -1,10 +1,8 @@
 package au.com.nicta.csp.brateval;
 
 import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.Assertions.*;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -12,8 +10,6 @@ import java.nio.file.Paths;
 class CompareEntitiesTest {
 
     private String dataDir = "";
-    private String[] MATCH_TYPES = {"exact","overlap","approx"};
-    private String[] ENTITY_TYPES = {"exact","inexact","hierarchical"};
     private String GOLD_PATH;
     private  String BRATEVAL_PATH;
     private String SYSTEM_PATH;
@@ -47,76 +43,76 @@ class CompareEntitiesTest {
     }
 
 
-    @org.junit.jupiter.api.Test
-    void report() {
-    }
-
-    @org.junit.jupiter.api.Test
-    void collectValidFiles() {
-    }
-
-    @org.junit.jupiter.api.Test
-    void evaluateExactExactNER() throws Exception {
+    @Test
+    @Tag("e2e")
+    void evaluateExactExact() throws Exception {
         String task = "ner", gold ="gt", eval = "test", mathchType = "exact",  entityType = "exact";
-        assertNERResults(task,gold,eval,mathchType,entityType);
+        assertResults(task,gold,eval,mathchType,entityType);
     }
 
-    @org.junit.jupiter.api.Test
-    void evaluateExactInexactNER() throws Exception {
+    @Test
+    @Tag("e2e")
+    void evaluateExactInexact() throws Exception {
         String task = "ner", gold ="gt", eval = "test", matchType = "exact",  entityType = "inexact";
-        assertNERResults(task,gold,eval,matchType,entityType);
+        assertResults(task,gold,eval,matchType,entityType);
     }
 
-    @org.junit.jupiter.api.Test
-    void evaluateExactHierarchicalNER() throws Exception {
+    @Test
+    @Tag("e2e")
+    void evaluateExactHierarchical() throws Exception {
         String task = "ner", gold ="gt", eval = "test", matchType = "exact",  entityType = "hierarchical";
-        assertNERResults(task,gold,eval,matchType,entityType);
+        assertResults(task,gold,eval,matchType,entityType);
     }
 
-
-    @org.junit.jupiter.api.Test
-    void evaluateOverlapExactNER() throws Exception {
+    @Test
+    @Tag("e2e")
+    void evaluateOverlapExact() throws Exception {
         String task = "ner", gold ="gt", eval = "test", mathchType = "overlap",  entityType = "exact";
-        assertNERResults(task,gold,eval,mathchType,entityType);
+        assertResults(task,gold,eval,mathchType,entityType);
     }
 
-    @org.junit.jupiter.api.Test
-    void evaluateOverlapInexactNER() throws Exception {
+    @Test
+    @Tag("e2e")
+    void evaluateOverlapInexact() throws Exception {
         String task = "ner", gold ="gt", eval = "test", matchType = "overlap",  entityType = "inexact";
-        assertNERResults(task,gold,eval,matchType,entityType);
+        assertResults(task,gold,eval,matchType,entityType);
     }
 
-    @org.junit.jupiter.api.Test
-    void evaluateOverlapHierarchicalNER() throws Exception {
+    @Test
+    @Tag("e2e")
+    void evaluateOverlapHierarchical() throws Exception {
         String task = "ner", gold ="gt", eval = "test", matchType = "overlap",  entityType = "hierarchical";
-        assertNERResults(task,gold,eval,matchType,entityType);
+        assertResults(task,gold,eval,matchType,entityType);
     }
 
 
-    @org.junit.jupiter.api.Test
-    void evaluateApproxExactNER() throws Exception {
+    @Test
+    @Tag("e2e")
+    void evaluateApproxExact() throws Exception {
         String task = "ner", gold ="gt", eval = "test", mathchType = "approx",  entityType = "exact";
-        assertNERResults(task,gold,eval,mathchType,entityType,0.8);
+        assertResults(task,gold,eval,mathchType,entityType,0.8);
     }
 
-    @org.junit.jupiter.api.Test
-    void evaluateApproxInexactNER() throws Exception {
+    @Test
+    @Tag("e2e")
+    void evaluateApproxInexact() throws Exception {
         String task = "ner", gold ="gt", eval = "test", matchType = "approx",  entityType = "inexact";
-        assertNERResults(task,gold,eval,matchType,entityType,0.8);
+        assertResults(task,gold,eval,matchType,entityType,0.8);
     }
 
-    @org.junit.jupiter.api.Test
-    void evaluateApproxHierarchicalNER() throws Exception {
+    @Test
+    @Tag("e2e")
+    void evaluateApproxHierarchical() throws Exception {
         String task = "ner", gold ="gt", eval = "test", matchType = "approx",  entityType = "hierarchical";
-        assertNERResults(task,gold,eval,matchType,entityType,0.8);
+        assertResults(task,gold,eval,matchType,entityType,0.8);
     }
 
-    private void assertNERResults(String task, String gold, String eval, String matchType, String entityType) throws Exception {
-        assertNERResults(task, gold, eval, matchType, entityType,-1);
+    private void assertResults(String task, String gold, String eval, String matchType, String entityType) throws Exception {
+        assertResults(task, gold, eval, matchType, entityType,-1);
     }
 
 
-    private void assertNERResults(String task, String gold, String eval, String matchType, String entityType, double threshold) throws Exception {
+    private void assertResults(String task, String gold, String eval, String matchType, String entityType, double threshold) throws Exception {
         OptionBuilder optionBuilder = new OptionBuilder();
         CompareEntities.main( optionBuilder
                 .gtPath(getPath(GOLD_PATH,task,gold))
@@ -136,7 +132,7 @@ class CompareEntitiesTest {
         }
     }
 
-    private String buildBratEvalFileName(String task, String gold, String eval, String mathchType, String entityType, double threshold) {
+    static String buildBratEvalFileName(String task, String gold, String eval, String mathchType, String entityType, double threshold) {
 
         if (!mathchType.equals("approx")){
             return String.format("%s-%s-%s-%s-%s.txt",task,gold,eval,mathchType,entityType);

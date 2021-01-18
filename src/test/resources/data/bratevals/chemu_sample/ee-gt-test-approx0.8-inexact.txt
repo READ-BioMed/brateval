@@ -1,0 +1,15 @@
+Annotation taxonomy ignored. No file annotation.conf found.
+Evaluating Folder: /home/aalbahem/workspace/freelance/brateval/src/test/resources/data/systems/chemu_sample/ee/test against Gold Folder: /home/aalbahem/workspace/freelance/brateval/src/test/resources/data/corpora/chemu_sample/ee/gt Match settings : Type match=INEXACT; Span match=APPROXIMATE; Similarity=0.8
+Summary:
+ARG1|REACTION_STEP|REACTION_PRODUCT|tp:61|fp:0|fn:0|precision:1.0000|recall:1.0000|f1:1.0000|fpm:0|fnm:0
+ARG1|REACTION_STEP|REAGENT_CATALYST|tp:58|fp:0|fn:0|precision:1.0000|recall:1.0000|f1:1.0000|fpm:0|fnm:0
+ARG1|REACTION_STEP|SOLVENT|tp:61|fp:0|fn:0|precision:1.0000|recall:1.0000|f1:1.0000|fpm:0|fnm:0
+ARG1|REACTION_STEP|STARTING_MATERIAL|tp:88|fp:0|fn:0|precision:1.0000|recall:1.0000|f1:1.0000|fpm:0|fnm:0
+ARG1|WORKUP|OTHER_COMPOUND|tp:164|fp:0|fn:0|precision:1.0000|recall:1.0000|f1:1.0000|fpm:0|fnm:0
+ARGM|REACTION_STEP|TEMPERATURE|tp:58|fp:0|fn:0|precision:1.0000|recall:1.0000|f1:1.0000|fpm:0|fnm:0
+ARGM|REACTION_STEP|TIME|tp:45|fp:0|fn:0|precision:1.0000|recall:1.0000|f1:1.0000|fpm:0|fnm:0
+ARGM|REACTION_STEP|YIELD_OTHER|tp:57|fp:0|fn:0|precision:1.0000|recall:1.0000|f1:1.0000|fpm:0|fnm:0
+ARGM|REACTION_STEP|YIELD_PERCENT|tp:50|fp:0|fn:0|precision:1.0000|recall:1.0000|f1:1.0000|fpm:0|fnm:0
+ARGM|WORKUP|TEMPERATURE|tp:15|fp:0|fn:0|precision:1.0000|recall:1.0000|f1:1.0000|fpm:0|fnm:0
+ARGM|WORKUP|TIME|tp:1|fp:0|fn:0|precision:1.0000|recall:1.0000|f1:1.0000|fpm:0|fnm:0
+all|tp:658|fp:0|fn:0|precision:1.0000|recall:1.0000|f1:1.0000|fpm:0|fnm:0
