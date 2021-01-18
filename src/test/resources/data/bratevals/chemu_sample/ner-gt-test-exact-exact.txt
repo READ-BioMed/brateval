@@ -1,0 +1,16 @@
+Annotation taxonomy ignored. No file annotation.conf found.
+Evaluating Folder: src/test/resources/data/systems/chemu_sample/ner/test against Gold Folder: src/test/resources/data/corpora/chemu_sample/ner/gt Match settings : Type match=EXACT; Span match=EXACT
+Summary:
+|tp|fp|fn|precision|recall|f1
+COMPOSITE|0|1|0|0.0000|0.0000|0.0000
+EXAMPLE_LABEL|49|0|0|1.0000|1.0000|1.0000
+OTHER_COMPOUND|173|1|3|0.9943|0.9830|0.9886
+REACTION_PRODUCT|110|0|0|1.0000|1.0000|1.0000
+REAGENT_CATALYST|58|0|0|1.0000|1.0000|1.0000
+SOLVENT|60|1|1|0.9836|0.9836|0.9836
+STARTING_MATERIAL|84|3|4|0.9655|0.9545|0.9600
+TEMPERATURE|74|0|0|1.0000|1.0000|1.0000
+TIME|47|0|0|1.0000|1.0000|1.0000
+YIELD_OTHER|57|0|0|1.0000|1.0000|1.0000
+YIELD_PERCENT|49|0|1|1.0000|0.9800|0.9899
+all|761|6|9|0.9922|0.9883|0.9902

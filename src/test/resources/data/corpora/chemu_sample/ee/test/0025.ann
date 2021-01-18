@@ -1,0 +1,44 @@
+T0	EXAMPLE_LABEL 5 6	3
+T22	REACTION_STEP 798 804	afford
+T1	REACTION_PRODUCT 7 177	N,N'-(((((((2,2'-Dimethyl-[1,1'-biphenyl]-3,3'-diyl)bis(methylene))bis(oxy))bis(2-methoxypyridine-6,3-diyl))bis(methylene))bis(azanediyl))bis(ethane-2,1-diyl))diacetamide
+T23	WORKUP 637 646	extracted
+T2	YIELD_PERCENT 985 988	33%
+T3	SOLVENT 320 338	1,2-dichloroethane
+T24	WORKUP 602 611	acidified
+T4	REAGENT_CATALYST 357 385	sodium triacetoxyborohydride
+T5	OTHER_COMPOUND 1207 1210	ACN
+T6	OTHER_COMPOUND 1117 1120	TFA
+T7	OTHER_COMPOUND 1096 1099	TFA
+T8	OTHER_COMPOUND 702 708	Na2SO4
+T25	REACTION_STEP 351 356	added
+T26	WORKUP 691 696	dried
+T9	OTHER_COMPOUND 1103 1106	H2O
+T10	STARTING_MATERIAL 195 296	6,6'-(((2,2'-dimethyl-[1,1'-biphenyl]-3,3'-diyl)bis(methylene))bis(oxy))bis(2-methoxynicotinaldehyde)
+T11	OTHER_COMPOUND 620 623	HCl
+T12	OTHER_COMPOUND 1124 1136	Acetonitrile
+T13	TIME 540 543	3 h
+T14	OTHER_COMPOUND 592 597	water
+T15	OTHER_COMPOUND 652 658	CH2Cl2
+T16	YIELD_OTHER 977 983	230 mg
+T17	TEMPERATURE 493 509	room temperature
+T18	TEMPERATURE 529 534	85° C
+T19	REACTION_PRODUCT 805 975	N,N'-(((((((2,2'-dimethyl-[1,1'-biphenyl]-3,3'-diyl)bis(methylene))bis(oxy))bis(2-methoxypyridine-6,3-diyl))bis(methylene))bis(azanediyl))bis(ethane-2,1-diyl))diacetamide
+T27	REACTION_STEP 482 489	stirred
+T28	WORKUP 570 576	poured
+T20	STARTING_MATERIAL 410 435	N-(2-aminoethyl)acetamide
+T21	TIME 514 520	20 min
+R0	ARG1 Arg1:T22 Arg2:T19
+R1	ARGM Arg1:T22 Arg2:T16
+R2	ARGM Arg1:T22 Arg2:T2
+R3	ARG1 Arg1:T23 Arg2:T15
+R4	ARG1 Arg1:T24 Arg2:T11
+R5	ARG1 Arg1:T25 Arg2:T10
+R6	ARG1 Arg1:T25 Arg2:T3
+R7	ARG1 Arg1:T25 Arg2:T4
+R8	ARG1 Arg1:T25 Arg2:T20
+R9	ARG1 Arg1:T26 Arg2:T8
+R10	ARGM Arg1:T27 Arg2:T17
+R11	ARGM Arg1:T27 Arg2:T21
+R12	ARGM Arg1:T27 Arg2:T18
+R13	ARGM Arg1:T27 Arg2:T13
+R14	ARG1 Arg1:T28 Arg2:T14

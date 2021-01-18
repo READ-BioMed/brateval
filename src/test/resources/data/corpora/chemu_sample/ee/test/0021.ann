@@ -1,0 +1,31 @@
+T14	WORKUP 698 704	eluted
+T15	REACTION_STEP 442 451	dissolved
+T0	STARTING_MATERIAL 202 334	1,1-Dioxo-3,3-dibutyl-5-phenyl-7-methylthio-8-[N-((R)-α-carboxybenzyl) carbamoylmethoxy]-2,3,4,5-tetrahydro-1,2,5-benzothiadiazepine
+T1	REAGENT_CATALYST 483 501	N-methylmorpholine
+T2	YIELD_PERCENT 811 814	53%
+T3	YIELD_OTHER 804 809	33 mg
+T16	REACTION_STEP 779 783	give
+T4	OTHER_COMPOUND 740 745	EtOAc
+T5	REACTION_PRODUCT 788 802	title compound
+T17	REACTION_STEP 556 561	added
+T6	OTHER_COMPOUND 673 679	silica
+T18	REACTION_STEP 588 595	stirred
+T7	SOLVENT 455 458	DCM
+T8	STARTING_MATERIAL 371 416	tert-butyl (2R,3R)-3-amino-2-hydroxybutanoate
+T9	SOLVENT 469 472	DMF
+T10	OTHER_COMPOUND 736 739	DCM
+T11	REACTION_PRODUCT 10 201	1,1-Dioxo-3,3-dibutyl-5-phenyl-7-methylthio-8-[N-((R)-α-{N-[1-(R)-2-(R)-1-(t-butoxycarbonyl)-1-hydroxy-prop-2-yl]carbamoyl}benzyl)carbamoylmethoxy]-2,3,4,5-tetrahydro-1,2,5-benzothiadiazepine
+T12	REAGENT_CATALYST 527 531	TBTU
+T13	TIME 600 607	4 hours
+R0	ARG1 Arg1:T14 Arg2:T10
+R1	ARG1 Arg1:T14 Arg2:T4
+R2	ARG1 Arg1:T15 Arg2:T0
+R3	ARG1 Arg1:T15 Arg2:T8
+R4	ARG1 Arg1:T15 Arg2:T7
+R5	ARG1 Arg1:T15 Arg2:T9
+R6	ARG1 Arg1:T16 Arg2:T5
+R7	ARGM Arg1:T16 Arg2:T3
+R8	ARGM Arg1:T16 Arg2:T2
+R9	ARG1 Arg1:T17 Arg2:T12
+R10	ARG1 Arg1:T17 Arg2:T1
+R11	ARGM Arg1:T18 Arg2:T13

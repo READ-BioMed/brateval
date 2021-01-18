@@ -1,0 +1,31 @@
+T0	TIME 537 544	3 hours
+T1	YIELD_OTHER 733 740	80.0 mg
+T2	TEMPERATURE 582 586	20°C
+T3	SOLVENT 458 479	N,N-dimethylformamide
+T4	REACTION_PRODUCT 11 104	7-(Cyclopropylmethyl)-1-(5-isopropylisoxazol-4-yl)methyl)-3-methyl-1H-purine-2,6(3H,7H)-dione
+T5	TEMPERATURE 515 520	120°C
+T6	YIELD_PERCENT 758 761	37%
+T7	STARTING_MATERIAL 206 243	4-(Chloromethyl)-5-isopropylisoxazole
+T8	STARTING_MATERIAL 266 323	7-(cyclopropylmethyl)-3-methyl-1H-purine-2,6(3H,7H)-dione
+T15	REACTION_STEP 525 532	reacted
+T16	REACTION_STEP 435 444	dissolved
+T17	REACTION_STEP 633 637	give
+T18	REACTION_STEP 505 511	heated
+T9	EXAMPLE_LABEL 8 10	58
+T10	REACTION_PRODUCT 112 205	7-(Cyclopropylmethyl)-1-(5-isopropylisoxazol-4-yl)methyl)-3-methyl-1H-purine-2,6(3H,7H)-dione
+T11	REAGENT_CATALYST 346 362	potassium iodide
+T12	EXAMPLE_LABEL 110 111	1
+T19	WORKUP 572 578	cooled
+T13	REAGENT_CATALYST 390 409	potassium carbonate
+T14	REACTION_PRODUCT 638 731	7-(cyclopropylmethyl)-1-(5-isopropylisoxazol-4-yl)methyl)-3-methyl-1H-purine-2,6(3H,7H)-dione
+R0	ARGM Arg1:T15 Arg2:T0
+R1	ARG1 Arg1:T16 Arg2:T7
+R2	ARG1 Arg1:T16 Arg2:T8
+R3	ARG1 Arg1:T16 Arg2:T11
+R4	ARG1 Arg1:T16 Arg2:T13
+R5	ARG1 Arg1:T16 Arg2:T3
+R6	ARG1 Arg1:T17 Arg2:T14
+R7	ARGM Arg1:T17 Arg2:T1
+R8	ARGM Arg1:T17 Arg2:T6
+R9	ARGM Arg1:T18 Arg2:T5
+R10	ARGM Arg1:T19 Arg2:T2

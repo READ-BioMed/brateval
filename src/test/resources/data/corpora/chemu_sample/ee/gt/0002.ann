@@ -1,0 +1,28 @@
+T0	SOLVENT 383 388	water
+T13	REACTION_STEP 637 641	used
+T1	TIME 458 465	5 hours
+T2	EXAMPLE_LABEL 6 7	3
+T3	TEMPERATURE 486 502	room temperature
+T4	YIELD_PERCENT 681 686	95.2%
+T5	REACTION_PRODUCT 618 632	title compound
+T6	REAGENT_CATALYST 303 324	hydrazine monohydrate
+T7	YIELD_OTHER 672 679	1.180 g
+T14	WORKUP 476 482	cooled
+T8	REACTION_PRODUCT 22 139	N-(3-chloro-4-fluorophenyl)-N-(2-fluoro-4-(hydrazinecarbonyl)benzyl)tetrahydro-2H-thiopyran-4-carboxamide 1,1-dioxide
+T9	STARTING_MATERIAL 140 252	Methyl 4-((N-(3-chloro-4-fluorophenyl)-1,1-dioxidotetrahydro-2H-thiopyran-4-carboxamido)methyl)-3-fluorobenzoate
+T10	TEMPERATURE 449 453	80°C
+T15	REACTION_STEP 354 363	dissolved
+T11	SOLVENT 367 374	ethanol
+T12	TEMPERATURE 399 415	room temperature
+T16	REACTION_STEP 438 445	stirred
+R0	ARG1 Arg1:T13 Arg2:T5
+R1	ARGM Arg1:T13 Arg2:T7
+R2	ARGM Arg1:T13 Arg2:T4
+R3	ARGM Arg1:T14 Arg2:T3
+R4	ARG1 Arg1:T15 Arg2:T11
+R5	ARG1 Arg1:T15 Arg2:T0
+R6	ARGM Arg1:T15 Arg2:T12
+R7	ARG1 Arg1:T15 Arg2:T6
+R8	ARG1 Arg1:T15 Arg2:T9
+R9	ARGM Arg1:T16 Arg2:T10
+R10	ARGM Arg1:T16 Arg2:T1

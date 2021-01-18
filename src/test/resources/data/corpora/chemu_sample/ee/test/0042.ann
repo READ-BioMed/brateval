@@ -1,0 +1,42 @@
+T0	OTHER_COMPOUND 603 607	NaOH
+T18	WORKUP 549 556	diluted
+T1	OTHER_COMPOUND 841 848	heptane
+T2	REAGENT_CATALYST 139 166	Hydroxylamine hydrochloride
+T3	OTHER_COMPOUND 700 705	MgSO4
+T4	REACTION_PRODUCT 15 138	(1S,3R)-1-(5-bromo-3-fluoropyridin-2-yl)-2-((1-fluorocyclopropyl)methyl)-3,5-dimethyl-1,2,3,4-tetrahydroisoquinolin-6-amine
+T5	REACTION_PRODUCT 916 1039	(1S,3R)-1-(5-bromo-3-fluoropyridin-2-yl)-2-((1-fluorocyclopropyl)methyl)-3,5-dimethyl-1,2,3,4-tetrahydroisoquinolin-6-amine
+T19	WORKUP 765 773	purified
+T20	WORKUP 689 694	dried
+T21	REACTION_STEP 909 915	afford
+T6	OTHER_COMPOUND 634 641	aqueous
+T7	REAGENT_CATALYST 394 411	potassium acetate
+T8	YIELD_PERCENT 1050 1053	63%
+T9	YIELD_OTHER 1041 1048	0.672 g
+T22	REACTION_STEP 476 483	stirred
+T10	OTHER_COMPOUND 783 789	silica
+T11	OTHER_COMPOUND 562 565	DCM
+T12	OTHER_COMPOUND 642 657	sodium chloride
+T13	OTHER_COMPOUND 832 837	EtOAc
+T14	TEMPERATURE 487 492	20° C
+T15	STARTING_MATERIAL 201 369	1-(5-bromo-3-fluoropyridin-2-yl)-N-((1S,3R)-1-(5-bromo-3-fluoropyridin-2-yl)-2-((1-fluorocyclopropyl)methyl)-3,5-dimethyl-1,2,3,4-tetrahydroisoquinolin-6-yl)methanimine
+T16	SOLVENT 435 439	MeOH
+T17	TIME 498 505	5 hours
+T23	WORKUP 578 584	washed
+T24	REACTION_STEP 192 197	added
+R0	ARG1 Arg1:T18 Arg2:T11
+R1	ARG1 Arg1:T19 Arg2:T10
+R2	ARG1 Arg1:T19 Arg2:T13
+R3	ARG1 Arg1:T19 Arg2:T1
+R4	ARG1 Arg1:T20 Arg2:T3
+R5	ARG1 Arg1:T21 Arg2:T5
+R6	ARGM Arg1:T21 Arg2:T9
+R7	ARGM Arg1:T21 Arg2:T8
+R8	ARGM Arg1:T22 Arg2:T14
+R9	ARGM Arg1:T22 Arg2:T17
+R10	ARG1 Arg1:T23 Arg2:T0
+R11	ARG1 Arg1:T23 Arg2:T6
+R12	ARG1 Arg1:T23 Arg2:T12
+R13	ARG1 Arg1:T24 Arg2:T2
+R14	ARG1 Arg1:T24 Arg2:T15
+R15	ARG1 Arg1:T24 Arg2:T7
+R16	ARG1 Arg1:T24 Arg2:T16
