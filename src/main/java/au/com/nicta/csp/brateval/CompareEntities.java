@@ -149,6 +149,7 @@ public class CompareEntities
 					}
 					entityTP.merge(e.getType(), 1, Integer::sum);
 					evalDoc.removeEntity(matchResult.getE2().getId()); // so that they won't be matched again
+					entityTypes.add(matchResult.getE2().getType());
 				} else {
 					// no entity matching gold entity in evaluation file -- FN
 					entityFN.merge(e.getType(), 1, Integer::sum);
