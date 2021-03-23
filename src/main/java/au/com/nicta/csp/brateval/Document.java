@@ -192,7 +192,7 @@ public class Document
    * Find relation in a given document
    * 
    * @param relation
-   * @param d
+   * @param mt
    * @return Return the relation in the matching document or null if no relation can be found
    */
   public RelationMatchResult findRelation(Relation relation, MatchType mt)

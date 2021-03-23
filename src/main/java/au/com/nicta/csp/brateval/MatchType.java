@@ -38,6 +38,30 @@ public class MatchType {
 	}
 
 
+	public static MatchType from(boolean exact_match, boolean verbose){
+		MatchType matchType = new MatchType();
+
+		if (exact_match){
+			matchType.setSpanMatchType(SpanMatch.EXACT);
+		} else {
+			matchType.setSpanMatchType(SpanMatch.EXACT);
+		}
+
+		return matchType;
+	}
+
+	public static MatchType buildEntityMatchType(boolean exactMatch, boolean isVerbose, double similarityThreshold){
+		MatchType matchType = new MatchType();
+
+		if (exactMatch){
+			matchType.setTypeMatchType(TypeMatch.EXACT);
+		} else {
+			matchType.setTypeMatchType(TypeMatch.INEXACT);
+		}
+
+		return matchType;
+	}
+
 	public SpanMatch getSpanMatchType() {
 		return this.spanMatchType;
 	}

@@ -91,9 +91,21 @@ public class CompareRelations
         return map;
     }
 
-    public static void evaluate(String goldFolderPath, String evalFolderPath, MatchType mt)
+    @Deprecated
+    public static void evaluate(String evalFolderPath, String goldFolderPath, boolean exact_match, boolean verbose) throws Exception {
+	    evaluate(goldFolderPath,evalFolderPath,MatchType.from(exact_match,verbose));
+    }
+
+    public static void evaluate(String goldFolderPath, String evalFolderPath, MatchType mt) throws IOException {
+        List<Map<String,Object>> results = new LinkedList<>();
+        evaluate(goldFolderPath, evalFolderPath, mt,results);
+
+    }
+
+    public static void evaluate(String goldFolderPath, String evalFolderPath, MatchType mt, List<Map<String,Object>> results)
             throws IOException
     {
+
         if ( goldFolderPath == null || evalFolderPath == null) {
             System.out.println("Missing folder for evaluation. Aborting.");
             return;
@@ -299,7 +311,7 @@ public class CompareRelations
         int totalMFP = 0;
         int totalMFN = 0;
 
-        List<Map<String,Object>> results = new LinkedList<>();
+
         for (String rt : relationTypes)
         {
             int TP = (relationTP.get(rt) == null ? 0 : relationTP.get(rt));
