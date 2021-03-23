@@ -4,6 +4,7 @@ import org.junit.jupiter.api.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -34,9 +35,8 @@ class CompareEntitiesTest {
     }
 
     @BeforeEach
-     void setUp() {
-
-        dataDir = this.getClass().getClassLoader().getResource("data").getFile();
+     void setUp() throws URISyntaxException {
+        dataDir = Paths.get(this.getClass().getClassLoader().getResource("data").toURI()).toString();
         GOLD_PATH = getPath(dataDir,"corpora","chemu_sample");
         BRATEVAL_PATH = getPath(dataDir,"bratevals","chemu_sample");
         SYSTEM_PATH = getPath(dataDir,"systems","chemu_sample");
@@ -126,9 +126,9 @@ class CompareEntitiesTest {
         ///                                  File name follows this pattern: task-gt-system-matchType-entityType.txt
         String brateEvalPath = buildBratEvalFileName(task, gold,eval, matchType,entityType, threshold);
         String[] expected = Files.readAllLines(Paths.get(BRATEVAL_PATH,brateEvalPath)).toArray(new String[1]);
-        String[] actual = outContent.toString().split("\n");
+        String[] actual = outContent.toString().trim().split("\n");
         for (int i = 0; i < expected.length-3; i++){
-            Assertions.assertEquals(expected[i+3],actual[i+3]);//we start at i+3 because the first three lines are debugging lines
+            Assertions.assertEquals(expected[i+3].trim(),actual[i+3].trim());//we start at i+3 because the first three lines are debugging lines
         }
     }
 
@@ -142,7 +142,7 @@ class CompareEntitiesTest {
     }
 
 
-    public static String getPath(String first, String ... paths){
+    public static String getPath(String first, String ... paths) {
         return Paths.get(first,paths).toString();
     }
 

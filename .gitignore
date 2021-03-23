@@ -5,6 +5,6 @@
 .project
 .settings
 .vscode
-.iml
+*.iml
 .idea
 brateval.jar

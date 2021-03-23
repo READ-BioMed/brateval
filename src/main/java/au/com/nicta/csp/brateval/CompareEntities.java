@@ -89,12 +89,16 @@ public class CompareEntities {
         ));
 
         OutFormat summaryFmt = OutFormat.ofEnum(Options.common.outFmt);
-        evaluate(goldFolder,  evalFolder, mt,summary,summaryFmt);
+        evaluate(goldFolder, evalFolder, mt, summary, summaryFmt);
     }
 
 
     public static void evaluate(String goldFolder, String evalFolder, MatchType mt, TableOut summary, OutFormat summaryFmt)
             throws Exception {
+        if (goldFolder == null || evalFolder == null) {
+            System.out.println("Missing folder for evaluation. Aborting.");
+            return;
+        }
 
         Map<String, Integer> entityTP = new TreeMap<String, Integer>();
         Map<String, Integer> entityFP = new TreeMap<String, Integer>();
@@ -134,100 +138,74 @@ public class CompareEntities {
                 }
             }
 
+            if (efile == null)
+                throw new Exception("mandatory file is missing: " + baseName);
+
             // Compare gfile with corresponding evaluation file (efile)
-            if (efile != null) {
-                validFilesEval.remove(efile);
+            validFilesEval.remove(efile);
 
-                // find text files
-                String txtName = baseName.substring(0, baseName.lastIndexOf('.')) + ".txt";
-                BackAnnotate back_annotate = new BackAnnotate(
-                        new String[]{path.getParent() + txtName,
-                                path2.getParent() + txtName});
+            // find text files
+            String txtName = baseName.substring(0, baseName.lastIndexOf('.')) + ".txt";
+            BackAnnotate back_annotate = new BackAnnotate(
+                    new String[]{path.getParent() + txtName,
+                            path2.getParent() + txtName});
 
-                TreeMap<Integer, BackAnnotate.SpanTag> ref_map = null;
+            TreeMap<Integer, BackAnnotate.SpanTag> ref_map = null;
 
-                Document goldDoc = Annotations.read(gfile.getAbsolutePath(), path.toString());
-                Document evalDoc = Annotations.read(efile.getAbsolutePath(), path2.toString());
+            Document goldDoc = Annotations.read(gfile.getAbsolutePath(), path.toString());
+            Document evalDoc = Annotations.read(efile.getAbsolutePath(), path2.toString());
 
-                if (back_annotate.hasSource()) {
-                    ref_map = BackAnnotate.makeTagMap(evalDoc.getEntities());
-                }
-                for (Entity e : goldDoc.getEntities()) {
-                    entityTypes.add(e.getType());
+            if (back_annotate.hasSource()) {
+                ref_map = BackAnnotate.makeTagMap(evalDoc.getEntities());
+            }
 
-                    EntityMatchResult matchResult = null;
+            for (Entity e : goldDoc.getEntities()) {
+                entityTypes.add(e.getType());
 
-                    matchResult = evalDoc.findEntity(e, mt);
-                    if (matchResult != null) {
-
-                        if (verbose_output) {
-                            String outStr = matchResult.toString();
-                            if (outStr != null)
-                                System.out.println(outStr);
-                        }
-
-                        if (entityTP.get(e.getType()) == null) {
-                            entityTP.put(e.getType(), 1);
-                        } else {
-                            entityTP.put(e.getType(), entityTP.get(e.getType()) + 1);
-                        }
-                    } else // no entity matching gold entity in evaluation file -- FN
-                    {
-                        if (entityFN.get(e.getType()) == null) {
-                            entityFN.put(e.getType(), 1);
-                        } else {
-                            entityFN.put(e.getType(), entityFN.get(e.getType()) + 1);
-                        }
-
-                        if (verbose_output)
-                            System.out.println("DOCUMENT:" + gfile.getName() + "|" + "FALSE_NEGATIVE|" + e.getType() + "|" + e.locationInfo() + "|" + e.getString());
-
-                        mismatches.setCell(0, back_annotate.locationInfo(e));
-                        mismatches.setCell(1, "FN");
-                        mismatches.setCell(2, (ref_map != null) ? back_annotate.renderContext(e, ref_map) : e.getString());
-                        mismatches.nextRow();
+                EntityMatchResult matchResult = evalDoc.findEntity(e, mt);
+                if (matchResult != null) {
+                    if (verbose_output) {
+                        String outStr = matchResult.toString();
+                        if (outStr != null)
+                            System.out.println(outStr);
                     }
+                    entityTP.merge(e.getType(), 1, Integer::sum);
+                    evalDoc.removeEntity(matchResult.getE2().getId()); // so that they won't be matched again
+                    entityTypes.add(matchResult.getE2().getType());
+                } else {
+                    // no entity matching gold entity in evaluation file -- FN
+                    entityFN.merge(e.getType(), 1, Integer::sum);
+                    if (verbose_output)
+                        System.out.println("DOCUMENT:" + gfile.getName() + "|" + "FALSE_NEGATIVE|" + e.getType() + "|" + e.locationInfo() + "|" + e.getString());
+
+                    mismatches.setCell(0, back_annotate.locationInfo(e));
+                    mismatches.setCell(1, "FN");
+                    mismatches.setCell(2, (ref_map != null) ? back_annotate.renderContext(e, ref_map) : e.getString());
+                    mismatches.nextRow();
                 }
+            }
 
-                if (back_annotate.hasSource()) {
-                    ref_map = BackAnnotate.makeTagMap(goldDoc.getEntities());
-                }
+            if (back_annotate.hasSource()) {
+                ref_map = BackAnnotate.makeTagMap(goldDoc.getEntities());
+            }
 
-                // count any entities in evaluation doc not matched when looking through the gold entities as FPs
-                for (Entity e : evalDoc.getEntities()) {
-                    entityTypes.add(e.getType());
+            // all the remaining entities are FPs, if not, they would have already been matched.
+            for (Entity e : evalDoc.getEntities()) {
+                entityTypes.add(e.getType());
 
-                    //Entity match = null;
-                    EntityMatchResult matchResult = null;
+                entityFP.merge(e.getType(), 1, Integer::sum);
 
-                    matchResult = goldDoc.findEntity(e, mt);
+                if (verbose_output)
+                    System.out.println("DOCUMENT:" + gfile.getName() + "|" + "FALSE_POSITIVE|" + e.getType() + "|" + e.locationInfo() + "|" + e.getString());
 
-                    // No match for entity in evaluation file in gold -- FP
-                    if (matchResult == null) {
-                        if (entityFP.get(e.getType()) == null) {
-                            entityFP.put(e.getType(), 1);
-                        } else {
-                            entityFP.put(e.getType(), entityFP.get(e.getType()) + 1);
-                        }
-
-                        if (verbose_output)
-                            System.out.println("DOCUMENT:" + gfile.getName() + "|" + "FALSE_POSITIVE|" + e.getType() + "|" + e.locationInfo() + "|" + e.getString());
-
-                        mismatches.setCell(0, back_annotate.locationInfo(e));
-                        mismatches.setCell(1, "FP");
-                        mismatches.setCell(2, (ref_map != null) ? back_annotate.renderContext(e, ref_map) : e.getString());
-                        mismatches.nextRow();
-                    }
-                }
+                mismatches.setCell(0, back_annotate.locationInfo(e));
+                mismatches.setCell(1, "FP");
+                mismatches.setCell(2, (ref_map != null) ? back_annotate.renderContext(e, ref_map) : e.getString());
+                mismatches.nextRow();
             }
         }
 
-        if (!validFilesEval.isEmpty()) {
-            throw new Exception("mandatory file is missing");
-        }
-
-
-
+//            TableOut summary = new TableOut(Arrays.asList(new Object[]{null,"tp","fp","fn","precision","recall","f1"}));
 
         taxonomy.traverseEntities(new HierList.Visitor<TaxonomyConfig.EntityDesc>() {
             public void pre(int level, TaxonomyConfig.EntityDesc curr,
@@ -273,7 +251,9 @@ public class CompareEntities {
             report(summary, 0, et, TP, FP, FN);
         }
         report(summary, 0, "all", allTP, allFP, allFN);
+//            OutFormat summaryFmt = OutFormat.ofEnum(Options.common.outFmt);
         String results = summaryFmt.produceTable(summary);
         System.out.println("Summary:\n" + results);
     }
+
 }
