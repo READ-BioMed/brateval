@@ -24,6 +24,13 @@
     </dependency>
   </dependencies>
 
+    <distributionManagement>
+    <repository>
+      <id>github</id>
+      <name>GitHub BratEval Apache Maven Packages</name>
+      <url>https://maven.pkg.github.com/aalbahem/brateval</url>
+    </repository>
+  </distributionManagement>
 
   <build>
     <plugins>
