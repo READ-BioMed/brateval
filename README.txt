@@ -1,8 +1,7 @@
 BRAT-Eval v0.3.0
 --------------
 
-This tool performs pairwise comparison of annotation sets done on the same set of documents.
-The annotated sets are required to be in the BRAT stand-off annotation format (http://brat.nlplab.org/standoff.html).
+This tool performs pairwise comparison of annotation sets done on the same set of documents, and replaces the original version under https://bitbucket.org/nicta_biomed/brateval.The annotated sets are required to be in the BRAT stand-off annotation format (http://brat.nlplab.org/standoff.html).
 The current version of the tool has been tested on annotations made with Brat v1.3.
 The tool only needs the jar file brateval.jar to work, which is included in the distribution file, and no further libraries are required.
 The jar file contains the compiled java classes and the java source files.
