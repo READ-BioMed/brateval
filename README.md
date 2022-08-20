@@ -1,4 +1,4 @@
-# BRAT-Eval v0.3.0
+# BRAT-Eval v0.3.1
 
 
 This tool performs pairwise comparison of annotation sets done on the same set of documents, and replaces the original version under https://bitbucket.org/nicta_biomed/brateval.
