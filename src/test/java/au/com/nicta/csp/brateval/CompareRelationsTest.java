@@ -7,6 +7,7 @@ import java.io.PrintStream;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Locale;
 
 import static au.com.nicta.csp.brateval.CompareEntitiesTest.buildBratEvalFileName;
 import static au.com.nicta.csp.brateval.CompareEntitiesTest.getPath;
@@ -39,6 +40,7 @@ class CompareRelationsTest {
 
     @BeforeEach
     void setUp() throws URISyntaxException {
+        Locale.setDefault(new Locale("en", "US")); //Reported scores use "." as decimal seperator
 
         dataDir = Paths.get(this.getClass().getClassLoader().getResource("data").toURI()).toString();
 

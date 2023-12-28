@@ -7,6 +7,7 @@ import java.io.PrintStream;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Locale;
 
 class CompareEntitiesTest {
 
@@ -36,6 +37,7 @@ class CompareEntitiesTest {
 
     @BeforeEach
      void setUp() throws URISyntaxException {
+        Locale.setDefault(new Locale("en", "US")); //Reported scores use "." as decimal seperator
         dataDir = Paths.get(this.getClass().getClassLoader().getResource("data").toURI()).toString();
         GOLD_PATH = getPath(dataDir,"corpora","chemu_sample");
         BRATEVAL_PATH = getPath(dataDir,"bratevals","chemu_sample");
