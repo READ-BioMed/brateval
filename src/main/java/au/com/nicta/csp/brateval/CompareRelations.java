@@ -20,7 +20,8 @@ public class CompareRelations
 
 	public static void main (String argc []) throws Exception
 	{
-		Options.common = new Options(argc);
+        Locale.setDefault(new Locale("en", "US")); //Reported scores use "." as decimal seperator
+        Options.common = new Options(argc);
 		verbose_output = Options.common.verbose;
 		taxonomy = new TaxonomyConfig(Options.common.configFile);
 		show_full_taxonomy = Options.common.show_full_taxonomy;

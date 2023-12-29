@@ -18,6 +18,7 @@ public class CompareEntities {
     static TaxonomyConfig taxonomy = TaxonomyConfig.singleton();
 
     public static void main(String argc[]) throws Exception {
+        Locale.setDefault(new Locale("en", "US")); //Reported scores use "." as decimal seperator
         Options.common = new Options(argc);
         verbose_output = Options.common.verbose;
         taxonomy.readConfigFile(Options.common.configFile);
