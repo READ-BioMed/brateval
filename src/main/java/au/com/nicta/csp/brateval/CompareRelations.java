@@ -46,14 +46,14 @@ public class CompareRelations
         { f_measure = (2*precision*recall)/(double)(precision+recall); }
 
         System.out.println(rt
-                + "|tp:" + TP
-                + "|fp:" + FP
-                + "|fn:" + FN
-                + "|precision:" + String.format("%1.4f", precision)
-                + "|recall:" + String.format("%1.4f", recall)
-                + "|f1:" + String.format("%1.4f", f_measure)
-                + "|fpm:" + MFP
-                + "|fnm:" + MFN
+                + "," + TP
+                + "," + FP
+                + "," + FN
+                + "," + String.format("%1.4f", precision)
+                + "," + String.format("%1.4f", recall)
+                + "," + String.format("%1.4f", f_measure)
+                + "," + MFP
+                + "," + MFN
         );
     }
 
@@ -216,6 +216,7 @@ public class CompareRelations
         }
 
         System.out.println("Summary:");
+        System.out.println("type,tp,fp,fn,precision,recall,f1,fpm,fnm");
 
         taxonomy.traverseRelations(new HierList.Visitor<TaxonomyConfig.RelationDesc>() {
             public void pre(int level, TaxonomyConfig.RelationDesc curr,
