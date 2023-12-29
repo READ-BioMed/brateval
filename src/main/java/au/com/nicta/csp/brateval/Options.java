@@ -26,7 +26,7 @@ import java.lang.IllegalArgumentException;
 	}
 
 		
-	public OutFmt outFmt = OutFmt.PLAIN;
+	public OutFmt outFmt = OutFmt.CSV;
 
 	// options related to annotation folders
 	public String goldFolder; // name of folder for gold standard annotations
