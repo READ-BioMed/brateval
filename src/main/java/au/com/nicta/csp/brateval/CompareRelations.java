@@ -1,8 +1,9 @@
 package au.com.nicta.csp.brateval;
 
+import com.opencsv.CSVReader;
+
+import java.io.*;
 import java.nio.file.Paths;
-import java.io.File;
-import java.io.IOException;
 import java.util.*;
 
 /**
@@ -214,6 +215,11 @@ public class CompareRelations
                 }
             }
         }
+        //<Catches the System-out-output>
+        java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+        PrintStream stdout = System.out;
+        System.setOut(new java.io.PrintStream(out)); //Catch sysrtem out
+        //</Catches the System-out-output>
 
         System.out.println("Summary:");
         System.out.println("type,tp,fp,fn,precision,recall,f1,fpm,fnm");
@@ -294,5 +300,55 @@ public class CompareRelations
             report(0, rt, TP, FP, FN, MFP, MFN);
         }
         report(0, "all", totalTP, totalFP, totalFN, totalMFP, totalMFN);
+
+        //<Reset System.out to default>
+        System.setOut(stdout);
+        System.out.println(out);
+        //</Reset System.out to default>
+
+        //<Here we parse the system out stream>
+        int precisionPos = 4; int recallPos=5; int f1Pos=6;
+
+        List<Double> macroPrecisionScores = new ArrayList<>();
+        List<Double> macroRecallScores = new ArrayList<>();
+        List<Double> macroF1Scores = new ArrayList<>();
+
+        FileWriter output = new FileWriter("scores.txt");
+        String[] nextLine;
+        CSVReader reader = new CSVReader(new StringReader(out.toString()));
+        while ((nextLine = reader.readNext()) != null) {
+            if (nextLine != null) { //Until end
+                if (nextLine.length == 9  && !nextLine[0].equals("type")){
+                    if(nextLine[0].equals("all")){
+
+                        output.append("MicroPrecision: " +nextLine[precisionPos] +"\n");
+                        output.append("MicroRecall: " +nextLine[recallPos] +"\n");
+                        output.append("MicroF1: " +nextLine[f1Pos] +"\n");
+
+                        //System.out.println("MicroP=" +nextLine[precisionPos]);
+                        //System.out.println("MicroR=" +nextLine[recallPos]);
+                        //System.out.println("MicroF1=" +nextLine[f1Pos]);
+                    }
+                    else{
+                        //System.out.println(String.join(",", nextLine));
+                        macroPrecisionScores.add(Double.parseDouble(nextLine[precisionPos]));
+                        macroRecallScores.add(Double.parseDouble(nextLine[recallPos]));
+                        macroF1Scores.add(Double.parseDouble(nextLine[f1Pos]));
+                    }
+                }
+
+            }
+        }
+
+        output.append("MacroPrecision: " +String.format("%1.4f",macroPrecisionScores.stream().mapToDouble(var -> var).average().getAsDouble()) +"\n");
+        output.append("MacroRevall: " +String.format("%1.4f",macroRecallScores.stream().mapToDouble(var -> var).average().getAsDouble())+"\n");
+        output.append("MacroF1: " +String.format("%1.4f",macroF1Scores.stream().mapToDouble(var -> var).average().getAsDouble())+"\n");
+
+        //System.out.println("MacroP=" +String.format("%1.4f",macroPrecisionScores.stream().mapToDouble(var -> var).average().getAsDouble()));
+        //System.out.println("MacroR=" +String.format("%1.4f",macroRecallScores.stream().mapToDouble(var -> var).average().getAsDouble()));
+        //System.out.println("MacroF1=" +String.format("%1.4f",macroF1Scores.stream().mapToDouble(var -> var).average().getAsDouble()));
+
+        output.close();
+        //</Here we parse the system out stream>
     }
 }
