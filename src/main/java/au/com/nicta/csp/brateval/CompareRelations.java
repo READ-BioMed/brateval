@@ -19,7 +19,9 @@ public class CompareRelations
     static  boolean show_full_taxonomy = false;
 	static  TaxonomyConfig taxonomy = TaxonomyConfig.singleton();
 
-	public static void main (String argc []) throws Exception
+    static String outFolder;
+
+    public static void main (String argc []) throws Exception
 	{
         Locale.setDefault(new Locale("en", "US")); //Reported scores use "." as decimal seperator
         Options.common = new Options(argc);
@@ -29,8 +31,9 @@ public class CompareRelations
 		
 		String evalFolder = Options.common.evalFolder;
 		String goldFolder = Options.common.goldFolder;
+        outFolder = Options.common.outputFolder;
 
-		System.out.println("Evaluating Folder: " + evalFolder + " against Gold Folder: " + goldFolder + " Match settings : " + Options.common.matchType.toString() );
+        System.out.println("Evaluating Folder: " + evalFolder + " against Gold Folder: " + goldFolder + " Match settings : " + Options.common.matchType.toString() );
 		evaluate(goldFolder, evalFolder, Options.common.matchType);
     }
     
@@ -313,7 +316,7 @@ public class CompareRelations
         List<Double> macroRecallScores = new ArrayList<>();
         List<Double> macroF1Scores = new ArrayList<>();
 
-        FileWriter output = new FileWriter("scores.txt");
+        FileWriter output = new FileWriter(outFolder +File.separator +"scores.txt");
         String[] nextLine;
         CSVReader reader = new CSVReader(new StringReader(out.toString()));
         while ((nextLine = reader.readNext()) != null) {
@@ -341,7 +344,7 @@ public class CompareRelations
         }
 
         output.append("MacroPrecision: " +String.format("%1.4f",macroPrecisionScores.stream().mapToDouble(var -> var).average().getAsDouble()) +"\n");
-        output.append("MacroRevall: " +String.format("%1.4f",macroRecallScores.stream().mapToDouble(var -> var).average().getAsDouble())+"\n");
+        output.append("MacroRecall: " +String.format("%1.4f",macroRecallScores.stream().mapToDouble(var -> var).average().getAsDouble())+"\n");
         output.append("MacroF1: " +String.format("%1.4f",macroF1Scores.stream().mapToDouble(var -> var).average().getAsDouble())+"\n");
 
         //System.out.println("MacroP=" +String.format("%1.4f",macroPrecisionScores.stream().mapToDouble(var -> var).average().getAsDouble()));

@@ -27,6 +27,7 @@ public class CompareEntities {
 
         String evalFolder = Options.common.evalFolder;
         String goldFolder = Options.common.goldFolder;
+        String outFolder = Options.common.outputFolder;
 
         System.out.println("Evaluating Folder: " + evalFolder + " against Gold Folder: " + goldFolder + " Match settings : " + Options.common.matchType.toString());
 
@@ -46,7 +47,7 @@ public class CompareEntities {
         List<Double> macroRecallScores = new ArrayList<>();
         List<Double> macroF1Scores = new ArrayList<>();
 
-        FileWriter output = new FileWriter("scores.txt");
+        FileWriter output = new FileWriter(outFolder +File.separator +"scores.txt");
 
         CSVReader reader = new CSVReader(new StringReader(out.toString()));
         String[] nextLine;
@@ -72,7 +73,7 @@ public class CompareEntities {
             }
         }
         output.append("MacroPrecision: " +String.format("%1.4f",macroPrecisionScores.stream().mapToDouble(var -> var).average().getAsDouble()) +"\n");
-        output.append("MacroRevall: " +String.format("%1.4f",macroRecallScores.stream().mapToDouble(var -> var).average().getAsDouble())+"\n");
+        output.append("MacroRecall: " +String.format("%1.4f",macroRecallScores.stream().mapToDouble(var -> var).average().getAsDouble())+"\n");
         output.append("MacroF1: " +String.format("%1.4f",macroF1Scores.stream().mapToDouble(var -> var).average().getAsDouble())+"\n");
 
         //System.out.println("MacroP=" +String.format("%1.4f",macroPrecisionScores.stream().mapToDouble(var -> var).average().getAsDouble()));
