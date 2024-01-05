@@ -26,12 +26,13 @@ import java.lang.IllegalArgumentException;
 	}
 
 		
-	public OutFmt outFmt = OutFmt.PLAIN;
+	public OutFmt outFmt = OutFmt.CSV;
 
 	// options related to annotation folders
 	public String goldFolder; // name of folder for gold standard annotations
 	public String evalFolder; // name of folder for annotations to be compared to gold standard
 	public String configFile; // location/name of annotation.conf file (path + name) [by default, "annotation.conf" in the current directory will be used]
+	public String outputFolder;
      
 	// options related to matching
 	public MatchType matchType; // specify how spans are treated for matching
@@ -50,6 +51,7 @@ import java.lang.IllegalArgumentException;
 		goldFolder = null;
 		evalFolder = null;
 		configFile = "annotation.conf";
+		outputFolder="";
 
 		for (int j=0; j<argv.length; ++j) {
 			if (argv[j].charAt(0) == '-') {
@@ -98,6 +100,10 @@ import java.lang.IllegalArgumentException;
 						if (typeSelection.equalsIgnoreCase("hier"))
 							typeSelection = "HIERARCHICAL";
 						matchType.setTypeMatchType(TypeMatch.valueOf(toEnumName(typeSelection)));
+						break;
+					case "-o" : case "-outputfolder":
+						j++;
+						outputFolder = argv[j];
 						break;
 					default:
 						throw new IllegalArgumentException("Unsupported option" + argv[j]);

@@ -1,8 +1,9 @@
 package au.com.nicta.csp.brateval;
 
+import com.opencsv.CSVReader;
+
+import java.io.*;
 import java.nio.file.Path;
-import java.io.File;
-import java.io.IOException;
 import java.util.*;
 
 
@@ -18,6 +19,7 @@ public class CompareEntities {
     static TaxonomyConfig taxonomy = TaxonomyConfig.singleton();
 
     public static void main(String argc[]) throws Exception {
+        Locale.setDefault(new Locale("en", "US")); //Reported scores use "." as decimal seperator
         Options.common = new Options(argc);
         verbose_output = Options.common.verbose;
         taxonomy.readConfigFile(Options.common.configFile);
@@ -25,9 +27,63 @@ public class CompareEntities {
 
         String evalFolder = Options.common.evalFolder;
         String goldFolder = Options.common.goldFolder;
+        String outFolder = Options.common.outputFolder;
 
         System.out.println("Evaluating Folder: " + evalFolder + " against Gold Folder: " + goldFolder + " Match settings : " + Options.common.matchType.toString());
+
+        //<Here we fetch the System.out stream of Brateval>
+        java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+        PrintStream stdout = System.out;
+        System.setOut(new java.io.PrintStream(out)); //Catch sysrtem out
         evaluate(goldFolder, evalFolder, Options.common.matchType);
+        System.setOut(stdout); //Reset System.out to default
+        System.out.println(out);
+        //</Here we fetch the System.out stream of Brateval>
+
+        //<Here we parse the system out stream>
+        int precisionPos = 4; int recallPos=5; int f1Pos=6;
+
+        List<Double> macroPrecisionScores = new ArrayList<>();
+        List<Double> macroRecallScores = new ArrayList<>();
+        List<Double> macroF1Scores = new ArrayList<>();
+
+        FileWriter output = new FileWriter(outFolder +File.separator +"scores.txt");
+
+        CSVReader reader = new CSVReader(new StringReader(out.toString()));
+        String[] nextLine;
+        while ((nextLine = reader.readNext()) != null) {
+            if (nextLine != null) { //Until end
+                if (nextLine.length == 7 && !nextLine[0].equals("")){
+                    if(nextLine[0].equals("all")){
+                        output.append("Task2aMicroP: " +nextLine[precisionPos] +"\n");
+                        output.append("Task2aMicroR: " +nextLine[recallPos] +"\n");
+                        output.append("Task2aMicroF1: " +nextLine[f1Pos] +"\n");
+
+                        //System.out.println("MicroP=" +nextLine[precisionPos]);
+                        //System.out.println("MicroR=" +nextLine[recallPos]);
+                        //System.out.println("MicroF1=" +nextLine[f1Pos]);
+                    }
+                    else{
+                        macroPrecisionScores.add(Double.parseDouble(nextLine[precisionPos]));
+                        macroRecallScores.add(Double.parseDouble(nextLine[recallPos]));
+                        macroF1Scores.add(Double.parseDouble(nextLine[f1Pos]));
+                    }
+
+                }
+            }
+        }
+        output.append("Task2aMacroP: " +String.format("%1.4f",macroPrecisionScores.stream().mapToDouble(var -> var).average().getAsDouble()) +"\n");
+        output.append("Task2aMacroR: " +String.format("%1.4f",macroRecallScores.stream().mapToDouble(var -> var).average().getAsDouble())+"\n");
+        output.append("Task2aMacroF1: " +String.format("%1.4f",macroF1Scores.stream().mapToDouble(var -> var).average().getAsDouble())+"\n");
+
+        //System.out.println("MacroP=" +String.format("%1.4f",macroPrecisionScores.stream().mapToDouble(var -> var).average().getAsDouble()));
+        //System.out.println("MacroR=" +String.format("%1.4f",macroRecallScores.stream().mapToDouble(var -> var).average().getAsDouble()));
+        //System.out.println("MacroF1=" +String.format("%1.4f",macroF1Scores.stream().mapToDouble(var -> var).average().getAsDouble()));
+
+        output.close();
+        //</Here we parse the system out stream>
+
+
     }
 
     static void report(TableOut summary, int level, String et, int TP, int FP, int FN) {

@@ -1,8 +1,9 @@
 package au.com.nicta.csp.brateval;
 
+import com.opencsv.CSVReader;
+
+import java.io.*;
 import java.nio.file.Paths;
-import java.io.File;
-import java.io.IOException;
 import java.util.*;
 
 /**
@@ -18,17 +19,21 @@ public class CompareRelations
     static  boolean show_full_taxonomy = false;
 	static  TaxonomyConfig taxonomy = TaxonomyConfig.singleton();
 
-	public static void main (String argc []) throws Exception
+    static String outFolder;
+
+    public static void main (String argc []) throws Exception
 	{
-		Options.common = new Options(argc);
+        Locale.setDefault(new Locale("en", "US")); //Reported scores use "." as decimal seperator
+        Options.common = new Options(argc);
 		verbose_output = Options.common.verbose;
 		taxonomy = new TaxonomyConfig(Options.common.configFile);
 		show_full_taxonomy = Options.common.show_full_taxonomy;
 		
 		String evalFolder = Options.common.evalFolder;
 		String goldFolder = Options.common.goldFolder;
+        outFolder = Options.common.outputFolder;
 
-		System.out.println("Evaluating Folder: " + evalFolder + " against Gold Folder: " + goldFolder + " Match settings : " + Options.common.matchType.toString() );
+        System.out.println("Evaluating Folder: " + evalFolder + " against Gold Folder: " + goldFolder + " Match settings : " + Options.common.matchType.toString() );
 		evaluate(goldFolder, evalFolder, Options.common.matchType);
     }
     
@@ -45,14 +50,14 @@ public class CompareRelations
         { f_measure = (2*precision*recall)/(double)(precision+recall); }
 
         System.out.println(rt
-                + "|tp:" + TP
-                + "|fp:" + FP
-                + "|fn:" + FN
-                + "|precision:" + String.format("%1.4f", precision)
-                + "|recall:" + String.format("%1.4f", recall)
-                + "|f1:" + String.format("%1.4f", f_measure)
-                + "|fpm:" + MFP
-                + "|fnm:" + MFN
+                + "," + TP
+                + "," + FP
+                + "," + FN
+                + "," + String.format("%1.4f", precision)
+                + "," + String.format("%1.4f", recall)
+                + "," + String.format("%1.4f", f_measure)
+                + "," + MFP
+                + "," + MFN
         );
     }
 
@@ -213,8 +218,14 @@ public class CompareRelations
                 }
             }
         }
+        //<Catches the System-out-output>
+        java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+        PrintStream stdout = System.out;
+        System.setOut(new java.io.PrintStream(out)); //Catch sysrtem out
+        //</Catches the System-out-output>
 
         System.out.println("Summary:");
+        System.out.println("type,tp,fp,fn,precision,recall,f1,fpm,fnm");
 
         taxonomy.traverseRelations(new HierList.Visitor<TaxonomyConfig.RelationDesc>() {
             public void pre(int level, TaxonomyConfig.RelationDesc curr,
@@ -292,5 +303,55 @@ public class CompareRelations
             report(0, rt, TP, FP, FN, MFP, MFN);
         }
         report(0, "all", totalTP, totalFP, totalFN, totalMFP, totalMFN);
+
+        //<Reset System.out to default>
+        System.setOut(stdout);
+        System.out.println(out);
+        //</Reset System.out to default>
+
+        //<Here we parse the system out stream>
+        int precisionPos = 4; int recallPos=5; int f1Pos=6;
+
+        List<Double> macroPrecisionScores = new ArrayList<>();
+        List<Double> macroRecallScores = new ArrayList<>();
+        List<Double> macroF1Scores = new ArrayList<>();
+
+        FileWriter output = new FileWriter(outFolder +File.separator +"scores.txt");
+        String[] nextLine;
+        CSVReader reader = new CSVReader(new StringReader(out.toString()));
+        while ((nextLine = reader.readNext()) != null) {
+            if (nextLine != null) { //Until end
+                if (nextLine.length == 9  && !nextLine[0].equals("type")){
+                    if(nextLine[0].equals("all")){
+
+                        output.append("Task2bMicroP: " +nextLine[precisionPos] +"\n");
+                        output.append("Task2bMicroR: " +nextLine[recallPos] +"\n");
+                        output.append("Task2bMicroF1: " +nextLine[f1Pos] +"\n");
+
+                        //System.out.println("MicroP=" +nextLine[precisionPos]);
+                        //System.out.println("MicroR=" +nextLine[recallPos]);
+                        //System.out.println("MicroF1=" +nextLine[f1Pos]);
+                    }
+                    else{
+                        //System.out.println(String.join(",", nextLine));
+                        macroPrecisionScores.add(Double.parseDouble(nextLine[precisionPos]));
+                        macroRecallScores.add(Double.parseDouble(nextLine[recallPos]));
+                        macroF1Scores.add(Double.parseDouble(nextLine[f1Pos]));
+                    }
+                }
+
+            }
+        }
+
+        output.append("Task2bMacroP: " +String.format("%1.4f",macroPrecisionScores.stream().mapToDouble(var -> var).average().getAsDouble()) +"\n");
+        output.append("Task2bMacroR: " +String.format("%1.4f",macroRecallScores.stream().mapToDouble(var -> var).average().getAsDouble())+"\n");
+        output.append("Task2bMacroF1: " +String.format("%1.4f",macroF1Scores.stream().mapToDouble(var -> var).average().getAsDouble())+"\n");
+
+        //System.out.println("MacroP=" +String.format("%1.4f",macroPrecisionScores.stream().mapToDouble(var -> var).average().getAsDouble()));
+        //System.out.println("MacroR=" +String.format("%1.4f",macroRecallScores.stream().mapToDouble(var -> var).average().getAsDouble()));
+        //System.out.println("MacroF1=" +String.format("%1.4f",macroF1Scores.stream().mapToDouble(var -> var).average().getAsDouble()));
+
+        output.close();
+        //</Here we parse the system out stream>
     }
 }
