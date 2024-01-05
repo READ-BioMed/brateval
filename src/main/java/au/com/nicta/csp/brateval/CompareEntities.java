@@ -55,9 +55,9 @@ public class CompareEntities {
             if (nextLine != null) { //Until end
                 if (nextLine.length == 7 && !nextLine[0].equals("")){
                     if(nextLine[0].equals("all")){
-                        output.append("MicroPrecision: " +nextLine[precisionPos] +"\n");
-                        output.append("MicroRecall: " +nextLine[recallPos] +"\n");
-                        output.append("MicroF1: " +nextLine[f1Pos] +"\n");
+                        output.append("Task2aMicroP: " +nextLine[precisionPos] +"\n");
+                        output.append("Task2aMicroR: " +nextLine[recallPos] +"\n");
+                        output.append("Task2aMicroF1: " +nextLine[f1Pos] +"\n");
 
                         //System.out.println("MicroP=" +nextLine[precisionPos]);
                         //System.out.println("MicroR=" +nextLine[recallPos]);
@@ -72,9 +72,9 @@ public class CompareEntities {
                 }
             }
         }
-        output.append("MacroPrecision: " +String.format("%1.4f",macroPrecisionScores.stream().mapToDouble(var -> var).average().getAsDouble()) +"\n");
-        output.append("MacroRecall: " +String.format("%1.4f",macroRecallScores.stream().mapToDouble(var -> var).average().getAsDouble())+"\n");
-        output.append("MacroF1: " +String.format("%1.4f",macroF1Scores.stream().mapToDouble(var -> var).average().getAsDouble())+"\n");
+        output.append("Task2aMacroP: " +String.format("%1.4f",macroPrecisionScores.stream().mapToDouble(var -> var).average().getAsDouble()) +"\n");
+        output.append("Task2aMacroR: " +String.format("%1.4f",macroRecallScores.stream().mapToDouble(var -> var).average().getAsDouble())+"\n");
+        output.append("Task2aMacroF1: " +String.format("%1.4f",macroF1Scores.stream().mapToDouble(var -> var).average().getAsDouble())+"\n");
 
         //System.out.println("MacroP=" +String.format("%1.4f",macroPrecisionScores.stream().mapToDouble(var -> var).average().getAsDouble()));
         //System.out.println("MacroR=" +String.format("%1.4f",macroRecallScores.stream().mapToDouble(var -> var).average().getAsDouble()));

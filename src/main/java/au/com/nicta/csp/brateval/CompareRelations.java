@@ -324,9 +324,9 @@ public class CompareRelations
                 if (nextLine.length == 9  && !nextLine[0].equals("type")){
                     if(nextLine[0].equals("all")){
 
-                        output.append("MicroPrecision: " +nextLine[precisionPos] +"\n");
-                        output.append("MicroRecall: " +nextLine[recallPos] +"\n");
-                        output.append("MicroF1: " +nextLine[f1Pos] +"\n");
+                        output.append("Task2bMicroP: " +nextLine[precisionPos] +"\n");
+                        output.append("Task2bMicroR: " +nextLine[recallPos] +"\n");
+                        output.append("Task2bMicroF1: " +nextLine[f1Pos] +"\n");
 
                         //System.out.println("MicroP=" +nextLine[precisionPos]);
                         //System.out.println("MicroR=" +nextLine[recallPos]);
@@ -343,9 +343,9 @@ public class CompareRelations
             }
         }
 
-        output.append("MacroPrecision: " +String.format("%1.4f",macroPrecisionScores.stream().mapToDouble(var -> var).average().getAsDouble()) +"\n");
-        output.append("MacroRecall: " +String.format("%1.4f",macroRecallScores.stream().mapToDouble(var -> var).average().getAsDouble())+"\n");
-        output.append("MacroF1: " +String.format("%1.4f",macroF1Scores.stream().mapToDouble(var -> var).average().getAsDouble())+"\n");
+        output.append("Task2bMacroP: " +String.format("%1.4f",macroPrecisionScores.stream().mapToDouble(var -> var).average().getAsDouble()) +"\n");
+        output.append("Task2bMacroR: " +String.format("%1.4f",macroRecallScores.stream().mapToDouble(var -> var).average().getAsDouble())+"\n");
+        output.append("Task2bMacroF1: " +String.format("%1.4f",macroF1Scores.stream().mapToDouble(var -> var).average().getAsDouble())+"\n");
 
         //System.out.println("MacroP=" +String.format("%1.4f",macroPrecisionScores.stream().mapToDouble(var -> var).average().getAsDouble()));
         //System.out.println("MacroR=" +String.format("%1.4f",macroRecallScores.stream().mapToDouble(var -> var).average().getAsDouble()));
